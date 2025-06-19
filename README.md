@@ -1,0 +1,31 @@
+# new_scf : An optimized* quantum chemisty calculation library
+*WIP
+
+## blasbind
+Configurable BLAS API that ships OpenMP (AVX512 and AVX2 capable) accelerated routines by default and is compatible to link with Netlib FBLAS, OpenBLAS, FlexiBLAS API, Intel oneAPI MKL FBLAS, AMD BLIS if detected.
+
+## libmatrix
+Lightweight optimized OpenMP Matrix library (AVX512 and AVX2 capable). Templated by default, but will use accelerated routines if standard types are used.
+
+## commons
+### testing_api.h
+Lightweight does-the-job header-only Testing Kit.
+
+### logging_api.h
+Lightweight zero-overhead header-only Logging Kit
+
+## Planned Capabilities
+Sorted according to priority
+* intbindx library for Gaussian integral evalulation and numerical (spectral, pseudospectral, etc.) evaluation with libint2 compatible linking
+* basissetx library for Basis Set Exchange-compatible loading of basis and creating new basis
+* libqchemapi library for shared API for calculation routines
+* (Restricted) Hartree-Fock Calculations for Atoms (atomscf)
+* (Restricted) Hartree-Fock Calculations for Molecules (molscf)
+* MP2 Calculations (mp2)
+* CUDA-acceleration for HF and MP2
+* Fully incore-GPU computation routines
+* __binary128 SIMD intrinsics (AVX512 only) acceleration for libmatrix and blasbind
+* GNU MPFR intrinsic support for libmatrix, blasbind
+
+#
+Copyright (C) 2025, Prajval K
