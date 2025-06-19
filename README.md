@@ -28,4 +28,5 @@ Sorted according to priority
 * GNU MPFR intrinsic support for libmatrix, blasbind
 
 #
+Mozilla Public License 2.0 (see LICENSE.md)
 Copyright (C) 2025, Prajval K
