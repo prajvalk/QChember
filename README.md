@@ -1,6 +1,9 @@
 # new_scf : An optimized* quantum chemisty calculation library
 *WIP
 
+## pybb (bootstrap.py) -- Python Build Bootstrap Toolkit
+Creates a ```checkhost.sh``` script to verify host capabilities for chosen build configuration, along with ```build.sh``` to compile the library, and a ```run_tests.sh``` script to run the tests (if selected).
+
 ## blasbind
 Configurable BLAS API that ships OpenMP (AVX512 and AVX2 capable) accelerated routines by default and is compatible to link with Netlib FBLAS, OpenBLAS, FlexiBLAS API, Intel oneAPI MKL FBLAS, AMD BLIS if detected.
 
