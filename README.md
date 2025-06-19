@@ -29,4 +29,5 @@ Sorted according to priority
 
 #
 Mozilla Public License 2.0 (see LICENSE.md)
+
 Copyright (C) 2025, Prajval K
