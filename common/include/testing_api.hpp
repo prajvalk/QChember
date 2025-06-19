@@ -27,10 +27,10 @@ namespace newscf::testing {
 
     inline void complete_test (TestHandle& handle) {
         if(!handle.fail_flag) {
-            std::cout << "PASSED. " << handle.assertions << " assertions passed out of " << handle.assertions << "\n";
+            std::cout << "\x1b[1;32mPASSED.\x1b[0m " << handle.assertions << " assertions passed out of " << handle.assertions << "\n";
             handle.passed_tests++;
         } else {
-            std::cout << "FAILED. " << handle.assertions << " assertions passed out of " << handle.assertions+handle.failed_assertions << "\n";
+            std::cout << "\x1b[1;31mFAILED.\x1b[0m" << handle.assertions << " assertions passed out of " << handle.assertions+handle.failed_assertions << "\n";
             std::cout << "==== Failed assertions: \n";
             std::cout << handle.err_msg << "\n";
             handle.failed_tests++;
@@ -79,8 +79,8 @@ namespace newscf::testing {
 
         std::cout << "==== \n";
         std::cout << "==== TESTSUITE " << handle.testsuite << "\n";
-        std::cout << "==== Passed Tests: " << handle.passed_tests << "\n";
-        std::cout << "==== Failed Tests: " << handle.failed_tests << "\n";
+        std::cout << "==== \x1b[0;32mPassed Tests: " << handle.passed_tests << "\x1b[0m\n";
+        std::cout << "==== \x1b[0;31mFailed Tests: " << handle.failed_tests << "\x1b[0m\n";
         std::cout << "==== ";
 
         handle.passed_tests = 0;
