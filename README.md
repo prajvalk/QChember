@@ -8,10 +8,10 @@ Configurable BLAS API that ships OpenMP (AVX512 and AVX2 capable) accelerated ro
 Lightweight optimized OpenMP Matrix library (AVX512 and AVX2 capable). Templated by default, but will use accelerated routines if standard types are used.
 
 ## commons
-### testing_api.h
+#### testing_api.hpp
 Lightweight does-the-job header-only Testing Kit.
 
-### logging_api.h
+#### logging_api.hpp
 Lightweight zero-overhead header-only Logging Kit
 
 ## Planned Capabilities
