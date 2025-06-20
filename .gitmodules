@@ -1,0 +1,3 @@
+[submodule "qcint"]
+	path = qcint
+	url = https://github.com/sunqm/qcint.git
