@@ -19,9 +19,6 @@ Lightweight zero-overhead header-only Logging Kit
 
 ## Planned Capabilities
 Sorted according to priority
-* intbindx library for Gaussian integral evalulation and numerical (spectral, pseudospectral, etc.) evaluation with libint2 compatible linking
-* basissetx library for Basis Set Exchange-compatible loading of basis and creating new basis
-* libqchemapi library for shared API for calculation routines
 * (Restricted) Hartree-Fock Calculations for Atoms (atomscf)
 * (Restricted) Hartree-Fock Calculations for Molecules (molscf)
 * MP2 Calculations (mp2)
