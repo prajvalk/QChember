@@ -154,7 +154,7 @@ compile_script += f"BLASBIND_SRC=\"{PROJECT_ROOT}/blasbind/src/*.cpp\"\n"
 compile_script += f"BLASBIND_INCLUDE=\"-I{PROJECT_ROOT}/blasbind/include\"\n"
 compile_script += f"BLASBIND_OBJ=\"-o {LIB_DIR}/libblasbind.so\"\n"
 compile_script += f"BLASBIND_LINK_LIB=\"{blas_link}\"\n"
-compile_script += "$CXX $CXX_FLAGS $CXX_LIB_FLAGS $INCLUDE_FLAGS $BLASBIND_INCLUDE $BLASBIND_SRC $BLASBIND_OBJ $BLASBIND_LINK_LIB\n 2>&1 | tee -a build.log \n"
+compile_script += "$CXX $CXX_FLAGS $CXX_LIB_FLAGS $INCLUDE_FLAGS $BLASBIND_INCLUDE $BLASBIND_SRC $BLASBIND_OBJ $BLASBIND_LINK_LIB 2>&1 | tee -a build.log \n"
 
 compile_script += "\n"
 compile_script += "echo Compiling libblasbind tests... \n"
@@ -162,9 +162,23 @@ compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $BLASBIND_INCLUDE {PROJECT_RO
 
 tests_script += f"export LD_LIBRARY_PATH={LIB_DIR}:$LD_LIBRARY_PATH \n"
 tests_script += "echo Running libblasbind tests ... \n"
-tests_script += f"{TEST_DIR}/gemm_test 2>&1 | tee -a tests.log"
+tests_script += f"{TEST_DIR}/gemm_test 2>&1 | tee -a tests.log \n"
 
-compile_script += "\n \n"
+compile_script += "\n"
+compile_script += "echo Compiling libmatrix ... \n \n"
+compile_script += f"LIBMATRIX_SRC=\"{PROJECT_ROOT}/libmatrix/src/*.cpp\"\n"
+compile_script += f"LIBMATRIX_INCLUDE=\"$BLASBIND_INCLUDE -I{PROJECT_ROOT}/libmatrix/include\"\n"
+compile_script += f"LIBMATRIX_OBJ=\"-o {LIB_DIR}/libmatrix.so\""
+
+compile_script += "\n"
+compile_script += "$CXX $CXX_FLAGS $CXX_LIB_FLAGS $INCLUDE_FLAGS $LIBMATRIX_INCLUDE $LIBMATRIX_SRC $LIBMATRIX_OBJ 2>&1 | tee -a build.log \n"
+
+compile_script += "\n"
+compile_script += "echo Compiling libmatrix tests ... \n"
+compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $LIBMATRIX_INCLUDE {PROJECT_ROOT}/libmatrix/tests/matrix_test.cpp -o {TEST_DIR}/matrix_test -L{LIB_DIR} -lmatrix 2>&1 | tee -a build.log \n"
+
+tests_script += "echo Running libmatrix tests \n"
+tests_script += f"{TEST_DIR}/matrix_test 2>&1 | tee -a tests.log \n"
 
 # Finally
 
