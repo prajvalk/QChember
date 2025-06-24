@@ -180,6 +180,20 @@ compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $LIBMATRIX_INCLUDE {PROJECT_R
 tests_script += "echo Running libmatrix tests \n"
 tests_script += f"{TEST_DIR}/matrix_test 2>&1 | tee -a tests.log \n"
 
+compile_script += "\n"
+compile_script += "echo Compiling libqcex ... \n"
+compile_script += f"LIBQCEX_INCLUDE=\"-I{PROJECT_ROOT}/libqcex/include $LIBMATRIX_INCLUDE\"\n"
+compile_script += f"LIBQCEX_SRC=\"{PROJECT_ROOT}/libqcex/src/*.cpp\"\n"
+compile_script += f"LIBQCEX_OBJ=\"-o {LIB_DIR}/libqcex.so\"\n"
+
+compile_script += f"$CXX $CXX_FLAGS $CXX_LIB_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE $LIBQCEX_OBJ $LIBQCEX_SRC 2>&1 | tee -a build.log\n"
+
+compile_script += "echo Compiling libqcex tests ... \n"
+compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE {PROJECT_ROOT}/libqcex/tests/geometry_test.cpp -o {TEST_DIR}/qcex_geom_test -L{LIB_DIR} -lqcex 2>&1 | tee -a build.log \n"
+
+tests_script += "echo Running libqcex tests \n"
+tests_script += f"{TEST_DIR}/qcex_geom_test 2>&1 | tee -a tests.log \n"
+
 # Finally
 
 with open(BUILD_DIR+"checkhost.sh", "w+") as chk:
