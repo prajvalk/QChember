@@ -7,7 +7,7 @@ Creates a ```checkhost.sh``` script to verify host capabilities for chosen build
 ## blasbind
 Configurable BLAS API that ships OpenMP (AVX512 and AVX2 capable) accelerated routines by default and is compatible to link with Netlib FBLAS, OpenBLAS, FlexiBLAS API, Intel oneAPI MKL FBLAS, AMD BLIS if detected.
 
-Commons will ship a LAPACKE interface header, which will use Netlib FORTRAN LAPACK, OpenBLAS LAPACK, or MKL or AMD libFLAME depending on the build configuration.
+Commons will ships an interface header, which will use Netlib FORTRAN LAPACK, OpenBLAS LAPACK, or MKL or AMD libFLAME depending on the build configuration.
 
 ## libmatrix
 Lightweight optimized OpenMP Matrix library (AVX512 and AVX2 capable). Templated by default, but will use accelerated routines if standard types are used.
