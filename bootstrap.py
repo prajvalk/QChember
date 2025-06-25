@@ -153,7 +153,7 @@ blas_link=get_blas_link(blas_type)
 compile_script += f"BLASBIND_SRC=\"{PROJECT_ROOT}/blasbind/src/*.cpp\"\n"
 compile_script += f"BLASBIND_INCLUDE=\"-I{PROJECT_ROOT}/blasbind/include\"\n"
 compile_script += f"BLASBIND_OBJ=\"-o {LIB_DIR}/libblasbind.so\"\n"
-compile_script += f"BLASBIND_LINK_LIB=\"{blas_link}\"\n"
+compile_script += f"BLASBIND_LINK_LIB=\"{blas_link} -llapack\"\n"
 compile_script += "$CXX $CXX_FLAGS $CXX_LIB_FLAGS $INCLUDE_FLAGS $BLASBIND_INCLUDE $BLASBIND_SRC $BLASBIND_OBJ $BLASBIND_LINK_LIB 2>&1 | tee -a build.log \n"
 
 compile_script += "\n"

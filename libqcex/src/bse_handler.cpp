@@ -1,5 +1,7 @@
 #include "qcex.hpp"
 
+#include "logging_api.hpp"
+
 void _bse_handler_load_basis (std::string filename, double** basis) {
     // Handles Psi4 basis format only
     

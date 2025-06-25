@@ -1,7 +1,7 @@
 #include "lapackinterface.hpp"
 
 extern "C" {
-    void _dgeqrf(int* m, int* n,
+    void dgeqrf_(int* m, int* n,
                   double* A, int* lda,
                   double* tau, double* work, int* lwork,
                   int* info);
@@ -11,5 +11,5 @@ void newscf_dgeqrf(int* m, int* n,
                   double* A, int* lda,
                   double* tau, double* work, int* lwork,
                   int* info) {
-    _dgeqrf (m, n, A, lda, tau, work, lwork, info);
+    dgeqrf_ (m, n, A, lda, tau, work, lwork, info);
 }

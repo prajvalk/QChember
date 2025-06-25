@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include "logging_api.hpp"
-
 namespace newscf::qcex {
 
     void load_molecule (std::string filename, double** molecule);

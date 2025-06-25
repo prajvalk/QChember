@@ -24,7 +24,7 @@ enum NEWSCF_LOGLEVELS {
     ERROR
 };
 
-void newscf_log (NEWSCF_LOGLEVELS level, std::string msg, std::string file, int line) {
+inline void newscf_log (NEWSCF_LOGLEVELS level, std::string msg, std::string file, int line) {
     if (level < NEWSCF_LOG_LEVEL) return;
 
     std::string level_str = "";

@@ -1,7 +1,7 @@
 #include "lapackinterface.hpp"
 
 extern "C" {
-    void _dpotrs(char* uplo, int* n, int* nrhs,
+    void dpotrs_(char* uplo, int* n, int* nrhs,
                   double* A, int* lda,
                   double* B, int* ldb, int* info);
 }
@@ -9,5 +9,5 @@ extern "C" {
 void newscf_dpotrs(char* uplo, int* n, int* nrhs,
                   double* A, int* lda,
                   double* B, int* ldb, int* info) {
-    _dpotrs (uplo, n, nrhs, A, lda, B, ldb, info);
+    dpotrs_ (uplo, n, nrhs, A, lda, B, ldb, info);
 }
