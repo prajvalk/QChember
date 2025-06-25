@@ -29,15 +29,15 @@ void newscf_log (NEWSCF_LOGLEVELS level, std::string msg, std::string file, int 
 
     std::string level_str = "";
 
-    if (level == DEV_DUMP) level_str = "DEV_DUMP";
-    else if (level == DEV_INFO) level_str = "DEV_INFO";
-    else if (level == DEV_WARN) level_str = "DEV_WARN";
-    else if (level == DEV_ERROR) level_str = "DEV_ERROR";
-    else if (level == INFO) level_str = "INFO";
-    else if (level == WARN) level_str = "WARN";
-    else level_str = "ERROR";
+    if (level == DEV_DUMP)              level_str = "DEV_DUMP ";
+    else if (level == DEV_INFO)         level_str = "DEV_INFO ";
+    else if (level == DEV_WARN)         level_str = "DEV_WARN ";
+    else if (level == DEV_ERROR)        level_str = "DEV_ERROR";
+    else if (level == INFO)             level_str = "INFO     ";
+    else if (level == WARN)             level_str = "WARN     ";
+    else                                level_str = "ERROR    ";
 
-    std::cout << "= "+level_str+" "+file+":"+std::to_string(line)+" = "+msg << std::endl;
+    std::cout << "==== "+level_str+" ==== ("+file+":"+std::to_string(line)+"): "+msg << std::endl;
 }
 
 #else

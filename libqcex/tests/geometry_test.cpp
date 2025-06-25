@@ -22,7 +22,7 @@ int main() {
 
     double* WORK;
 
-    load_molecule("test_water.xyz", WORK);
+    load_molecule("test_water.xyz", &WORK);
 
     TEST_ASSERT_EQ (WORK[0], 1.0, hnd);
     TEST_ASSERT_EQ (WORK[1], 0.749023100410, hnd);

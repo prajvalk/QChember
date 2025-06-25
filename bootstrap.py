@@ -2,7 +2,7 @@ script_version = "0.2.0"
 project_version = ""
 
 default_flags="-fpermissive"
-debug_flags=" -g3" # Modify Later
+debug_flags=" -g3 -DNEWSCF_LOG_LEVEL=-1" # Modify Later
 release_flags=" -O3"
 cxx_lib_flags=" -fPIC -shared"
 include_flags=""
