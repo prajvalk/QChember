@@ -15,6 +15,7 @@ void _load_molecule_internal_geom (std::string fn, double** space) {
     std::ifstream copy (fn);
 
     if (top != "" || !is_number(top)) {
+        std::cout << top << "\n";
         molecule_size = std::stoi(top);
     } else {
         HANDLE_ERROR ("Invalid header in file "+fn, 101);

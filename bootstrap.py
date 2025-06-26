@@ -99,6 +99,10 @@ print("Version", script_version)
 print("Mozilla Public License 2.0, see LICENSE.md for the full license terms.")
 print("Copyright (C) 2025, Prajval K")
 print()
+print("<<<<< IMPORTANT NOTICE >>>>>")
+print(" It is assumed that the qcint library is compiled and stored in build/qcint.")
+print(" Build will fail if this is not done. Automatic qcint compilation will be added in the future.")
+print()
 
 user_build=get_user_input("Build Type:", build_flags, 0)
 user_simd=get_user_input("CPU Intrinsics Level:", simd_flags, 0)
@@ -128,6 +132,9 @@ import shutil
 
 PROJECT_ROOT=os.getcwd()
 BUILD_DIR=PROJECT_ROOT+"/build/"+config_tag+"/"
+QCINT_DIR=PROJECT_ROOT+"/build/qcint/"
+QCINT_LIB=QCINT_DIR
+QCINT_INCLUDE=QCINT_DIR+"include"
 
 if os.path.exists(BUILD_DIR):
     shutil.rmtree(BUILD_DIR)
@@ -182,20 +189,24 @@ tests_script += f"{TEST_DIR}/matrix_test 2>&1 | tee -a tests.log \n"
 
 compile_script += "\n"
 compile_script += "echo Compiling libqcex ... \n"
-compile_script += f"LIBQCEX_INCLUDE=\"-I{PROJECT_ROOT}/libqcex/include $LIBMATRIX_INCLUDE\"\n"
+compile_script += f"LIBQCEX_INCLUDE=\"-I{PROJECT_ROOT}/libqcex/include -I{QCINT_INCLUDE} $LIBMATRIX_INCLUDE\"\n"
 compile_script += f"LIBQCEX_SRC=\"{PROJECT_ROOT}/libqcex/src/*.cpp\"\n"
 compile_script += f"LIBQCEX_OBJ=\"-o {LIB_DIR}/libqcex.so\"\n"
+compile_script += f"LIBQCEX_LINK=\"-lcint -L{QCINT_LIB}\"\n"
 
-compile_script += f"$CXX $CXX_FLAGS $CXX_LIB_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE $LIBQCEX_OBJ $LIBQCEX_SRC 2>&1 | tee -a build.log\n"
+compile_script += f"$CXX $CXX_FLAGS $CXX_LIB_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE $LIBQCEX_OBJ $LIBQCEX_SRC $LIBQCEX_LINK 2>&1 | tee -a build.log\n"
 
 compile_script += "echo Compiling libqcex tests ... \n"
 compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE {PROJECT_ROOT}/libqcex/tests/geometry_test.cpp -o {TEST_DIR}/qcex_geom_test -L{LIB_DIR} -lqcex 2>&1 | tee -a build.log \n"
 compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE {PROJECT_ROOT}/libqcex/tests/bse_test.cpp -o {TEST_DIR}/qcex_bse_test -L{LIB_DIR} -lqcex 2>&1 | tee -a build.log \n"
+compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE {PROJECT_ROOT}/libqcex/tests/libcint_wrapper_test.cpp -o {TEST_DIR}/qcex_libcint_wrapper_test -L{LIB_DIR} -lqcex 2>&1 | tee -a build.log \n"
 
 tests_script += "echo Running libqcex tests \n"
 tests_script += f"cp -R {PROJECT_ROOT}/libqcex/tests/data/*.bas {BUILD_DIR} \n"
+tests_script += f"cp -R {QCINT_LIB}/*.so {LIB_DIR} \n"
 tests_script += f"{TEST_DIR}/qcex_geom_test 2>&1 | tee -a tests.log \n"
 tests_script += f"{TEST_DIR}/qcex_bse_test 2>&1 | tee -a tests.log \n"
+tests_script += f"{TEST_DIR}/qcex_libcint_wrapper_test 2>&1 | tee -a tests.log \n"
 tests_script += f"rm -rf {BUILD_DIR}*.bas \n"
 
 # Finally
