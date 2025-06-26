@@ -113,4 +113,14 @@ inline bool starts_with(const std::string& str, const std::string& prefix) {
            str.compare(0, prefix.size(), prefix) == 0;
 }
 
+
+// --- FORTRAN-style float parser ---
+inline double parse_fortran_double(const std::string& token) {
+    std::string fixed_token = token;
+    std::replace(fixed_token.begin(), fixed_token.end(), 'D', 'E');
+    std::replace(fixed_token.begin(), fixed_token.end(), 'd', 'E');
+    return std::stod(fixed_token);
+}
+
+
 #endif

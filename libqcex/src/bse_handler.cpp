@@ -5,10 +5,11 @@
 #include "qcex_utils.hpp"
 #include "logging_api.hpp"
 
-void _bse_handler_load_basis (std::string filename, double** basis) {
+// === Basis loader ===
+void _bse_handler_load_basis(std::string filename, double** basis) {
     std::ifstream infile(filename);
     if (!infile.is_open()) {
-        HANDLE_ERROR ("Failed to open basis file "+filename, 105);
+        HANDLE_ERROR("Failed to open basis file " + filename, 105);
     }
 
     // === FIRST PASS TO CALCULATE MEMORY ===
@@ -37,11 +38,12 @@ void _bse_handler_load_basis (std::string filename, double** basis) {
     infile.close();
     long membytes = ndoubles * sizeof(double);
     *basis = reinterpret_cast<double*>(malloc(membytes));
+    LOG(DEV_INFO, "(malloc) Allocating basis space (bytes): " + std::to_string(membytes));
 
     // === SECOND PASS TO LOAD DATA ===
     infile.open(filename);
     if (!infile.is_open()) {
-        HANDLE_ERROR ("Failed to reopen basis file", 106);
+        HANDLE_ERROR("Failed to reopen basis file", 106);
     }
 
     size_t i = 0;
@@ -52,7 +54,7 @@ void _bse_handler_load_basis (std::string filename, double** basis) {
     while (std::getline(infile, line)) {
         if (starts_with(line, "****")) {
             if (current_Z != -1) {
-                *basis[shell_count_pos] = shell_count;
+                (*basis)[shell_count_pos] = shell_count;
             }
             shell_count = 0;
             current_Z = -1;
@@ -63,35 +65,38 @@ void _bse_handler_load_basis (std::string filename, double** basis) {
         std::string token;
         if (current_Z == -1 && (iss >> token)) {
             current_Z = get_atomic_number(token);
-            *basis[i++] = current_Z;
+            (*basis)[i++] = current_Z;
             shell_count_pos = i++;
         } else if (std::isalpha(line[0])) {
             std::string shell_type;
             int nprim;
             double scale;
-            iss.clear(); iss.str(line);
+            iss.clear();
+            iss.str(line);
             iss >> shell_type >> nprim >> scale;
+
             if (shell_type.length() >= 2) {
-                HANDLE_ERROR ("Compound shells not supported.", 99001);
+                HANDLE_ERROR("Compound shells not supported.", 99001);
             }
-            int L = shell_type[0] - 'S';  // S=0, P=1, D=2, ...
-            *basis[i++] = L;
-            *basis[i++] = nprim;
+
+            int L = get_angular_momentum_from_symbol(shell_type[0]);  // S=0, P=1, D=2, ...
+            (*basis)[i++] = L;
+            (*basis)[i++] = nprim;
             shell_count++;
 
             for (int j = 0; j < nprim; ++j) {
                 std::getline(infile, line);
                 std::istringstream datastream(line);
-                double exp, coef;
-                datastream >> exp >> coef;
-                *basis[i++] = exp;
-                *basis[i++] = coef;
+                std::string exp_str, coef_str;
+                datastream >> exp_str >> coef_str;
+                (*basis)[i++] = parse_fortran_double(exp_str);
+                (*basis)[i++] = parse_fortran_double(coef_str);
             }
         }
     }
 
     if (current_Z != -1) {
-        *basis[shell_count_pos] = shell_count;
+        (*basis)[shell_count_pos] = shell_count;
     }
 
     infile.close();

@@ -54,7 +54,7 @@ namespace newscf::testing {
 
     template <typename T>
     inline void test_assert_eq (const T a, const T b, const T tol, TestHandle& handle, std::string file, int lineno) {
-        if (a == b) {
+        if (a - b == 0) {
             handle.assertions++;
         } else {
             handle.err_msg += "\t "+file+":"+std::to_string(lineno)+" | Assertion failed at between " + std::to_string(a) + " and " + std::to_string(b) + " with tol=" + std::to_string(tol) + "\n";
@@ -65,7 +65,13 @@ namespace newscf::testing {
 
     template <typename T>
     inline void test_assert_eq (const T a, const T b, TestHandle& handle, std::string file, int lineno) {
-        test_assert_eq (a, b, T(0), handle, file, lineno);
+        if constexpr (std::is_same<T, double>::value) {
+            test_assert_eq (a, b, T(1e-15), handle, file, lineno);
+        } else if constexpr (std::is_same<T, float>::value) {
+            test_assert_eq (a, b, T(1e-5), handle, file, lineno);
+        } else {
+            test_assert_eq (a, b, T(1e-16), handle, file, lineno);
+        }
     }
 
     #define TEST_ASSERT_EQ(a, b, h) \

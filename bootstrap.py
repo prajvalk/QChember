@@ -2,7 +2,7 @@ script_version = "0.2.0"
 project_version = ""
 
 default_flags="-fpermissive"
-debug_flags=" -g3 -DNEWSCF_LOG_LEVEL=-1" # Modify Later
+debug_flags=" -O0 -g3 -DNEWSCF_LOG_LEVEL=-1" # Modify Later
 release_flags=" -O3"
 cxx_lib_flags=" -fPIC -shared"
 include_flags=""
@@ -190,9 +190,13 @@ compile_script += f"$CXX $CXX_FLAGS $CXX_LIB_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLU
 
 compile_script += "echo Compiling libqcex tests ... \n"
 compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE {PROJECT_ROOT}/libqcex/tests/geometry_test.cpp -o {TEST_DIR}/qcex_geom_test -L{LIB_DIR} -lqcex 2>&1 | tee -a build.log \n"
+compile_script += f"$CXX $CXX_FLAGS $INCLUDE_FLAGS $LIBQCEX_INCLUDE {PROJECT_ROOT}/libqcex/tests/bse_test.cpp -o {TEST_DIR}/qcex_bse_test -L{LIB_DIR} -lqcex 2>&1 | tee -a build.log \n"
 
 tests_script += "echo Running libqcex tests \n"
+tests_script += f"cp -R {PROJECT_ROOT}/libqcex/tests/data/*.bas {BUILD_DIR} \n"
 tests_script += f"{TEST_DIR}/qcex_geom_test 2>&1 | tee -a tests.log \n"
+tests_script += f"{TEST_DIR}/qcex_bse_test 2>&1 | tee -a tests.log \n"
+tests_script += f"rm -rf {BUILD_DIR}*.bas \n"
 
 # Finally
 
