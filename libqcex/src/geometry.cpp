@@ -20,10 +20,15 @@ void _load_molecule_internal_geom(const std::string& fn, double** space) {
     if (!std::getline(stream, line)) {
         HANDLE_ERROR("Empty file or failed to read atom count line in " + fn, 101);
     }
-    if (!is_number(line)) {
-        HANDLE_ERROR("First line of file must be the number of atoms, got: " + line, 102);
-    }
-    molecule_size = std::stoi(line);
+    try {
+        molecule_size = std::stoi(line);
+        if (molecule_size <= 0) {
+            HANDLE_ERROR("Number of atoms must be positive, got: " + line, 102);
+        }
+    } catch (const std::exception& e) {
+        HANDLE_ERROR("Failed to parse number of atoms from first line: " + line, 102);
+    }   
+
 
     // === Skip the comment/units line ===
     if (!std::getline(stream, line)) {
