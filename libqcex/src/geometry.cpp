@@ -5,57 +5,70 @@
 #include <algorithm>
 #include <sstream>
 
-void _load_molecule_internal_geom (std::string fn, double** space) {
-    LOG (INFO, "Loading molecular geometry from file "+fn);
-    std::ifstream stream (fn);
-    int molecule_size = 0;
-    std::string top;
-    std::getline(stream, top);
+void _load_molecule_internal_geom(const std::string& fn, double** space) {
+    LOG(INFO, "Loading molecular geometry from file " + fn);
 
-    std::ifstream copy (fn);
-
-    if (top != "" || !is_number(top)) {
-        std::cout << top << "\n";
-        molecule_size = std::stoi(top);
-    } else {
-        HANDLE_ERROR ("Invalid header in file "+fn, 101);
+    std::ifstream stream(fn);
+    if (!stream.is_open()) {
+        HANDLE_ERROR("Failed to open file " + fn, 100);
     }
 
-    long membytes = sizeof(double) * (4 * molecule_size + 1);
+    std::string line;
+    int molecule_size = 0;
 
-    LOG (DEV_INFO, "(malloc) Allocating geometry workspace (bytes): "+std::to_string(membytes));
+    // === Read atom count line ===
+    if (!std::getline(stream, line)) {
+        HANDLE_ERROR("Empty file or failed to read atom count line in " + fn, 101);
+    }
+    if (!is_number(line)) {
+        HANDLE_ERROR("First line of file must be the number of atoms, got: " + line, 102);
+    }
+    molecule_size = std::stoi(line);
 
-    *space = reinterpret_cast<double*> (malloc(membytes));
+    // === Skip the comment/units line ===
+    if (!std::getline(stream, line)) {
+        HANDLE_ERROR("Unexpected EOF after atom count line in " + fn, 103);
+    }
 
-    (*space)[0] = molecule_size; 
+    long membytes = sizeof(double) * (1 + 4 * molecule_size);
+    LOG(DEV_INFO, "(malloc) Allocating geometry workspace (bytes): " + std::to_string(membytes));
+    *space = reinterpret_cast<double*>(malloc(membytes));
+    if (!*space) {
+        HANDLE_ERROR("Memory allocation failed for geometry", 104);
+    }
+
+    (*space)[0] = static_cast<double>(molecule_size);
     int offset = 1;
 
-    for (int i = 1; i <= molecule_size;) {
-        std::string line;
-        if (stream.eof() && (i - molecule_size) != 0) {
-            LOG (DEV_INFO, "Expected more atoms: "+std::to_string(i - molecule_size));
-            HANDLE_ERROR ("Reached EOF of geometry file", 103);
-        } 
-        std::getline(stream, line);
-        if(line.empty()) continue;
+    int atoms_read = 0;
+    while (atoms_read < molecule_size && std::getline(stream, line)) {
+        if (line.empty()) continue;
+
+        std::istringstream iss(line);
         std::string symbol;
         double x, y, z;
-        std::istringstream iss(line);
-        if (!(stream >> symbol >> x >> y >> z)) {
-            LOG (INFO, "Invalid parse: "+line);
-            HANDLE_ERROR ("Could not parse geometry file", 104);
+        if (!(iss >> symbol >> x >> y >> z)) {
+            HANDLE_ERROR("Failed to parse geometry line: " + line, 105);
         }
-        int j = i - 1;
+
         symbol = normalize_symbol(symbol);
-        (*space)[4 * j + 0 + offset] = get_atomic_number (symbol);
-        (*space)[4 * j + 1 + offset] = x;
-        (*space)[4 * j + 2 + offset] = y;
-        (*space)[4 * j + 3 + offset] = z;
-        i++;
+        int Z = get_atomic_number(symbol);
+
+        size_t idx = offset + atoms_read * 4;
+        (*space)[idx + 0] = static_cast<double>(Z);
+        (*space)[idx + 1] = x;
+        (*space)[idx + 2] = y;
+        (*space)[idx + 3] = z;
+
+        atoms_read++;
     }
 
-    LOG (INFO, "Geometry read and loaded into memory");
-    stream.close();
+    if (atoms_read != molecule_size) {
+        HANDLE_ERROR("Expected " + std::to_string(molecule_size) +
+                     " atoms, but read " + std::to_string(atoms_read), 106);
+    }
+
+    LOG(INFO, "Successfully loaded " + std::to_string(molecule_size) + " atoms from geometry.");
 }
 
 namespace newscf::qcex {
