@@ -92,4 +92,25 @@ inline const std::string& get_atomic_symbol(int atomic_number) {
     return it->second;
 }
 
+inline const int get_angular_momentum_from_symbol (const char ch) {
+    switch (ch) {
+        case 'S': return 0;
+        case 'P': return 1;
+        case 'D': return 2;
+        case 'F': return 3;
+        case 'G': return 4;
+        case 'H': return 5;
+        case 'I': return 6;
+        default: 
+            LOG (WARN, "Unsupported angular momentum level "+std::to_string(ch));
+            HANDLE_ERROR ("Angular momentum too large! Unsupported!", 99002);
+            return 99;
+    }
+}
+
+inline bool starts_with(const std::string& str, const std::string& prefix) {
+    return str.size() >= prefix.size() &&
+           str.compare(0, prefix.size(), prefix) == 0;
+}
+
 #endif

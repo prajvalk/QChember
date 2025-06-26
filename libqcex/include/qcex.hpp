@@ -11,6 +11,8 @@ namespace newscf::qcex {
 
     void load_basis (std::string filename, double** basis);
 
+    void load_basis (std::string filename, double** basis, double* molecule);
+
     void destroy_basis (double* basis);
 
 }
