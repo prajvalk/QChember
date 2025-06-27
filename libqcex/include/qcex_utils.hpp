@@ -17,14 +17,14 @@ inline bool is_number(const std::string &s) {
     handle_error (EXC, MSG, CODE, __FILE__, __LINE__);
 
 inline void handle_error (const std::string &msg, int exitcode, std::string fn, int no) {
-    LOG (ERROR, msg);
+    LOG_ASIS (ERROR, msg, fn, no);
     throw std::runtime_error(msg);
     exit(exitcode);
 }
 
 inline void handle_error (const std::exception& ex, const std::string &msg, int exitcode, std::string fn, int no) {
-    LOG (ERROR, msg);
-    LOG (DEV_ERROR, ex.what());
+    LOG_ASIS (ERROR, msg, fn, no);
+    LOG_ASIS (DEV_ERROR, ex.what(), fn, no);
     throw std::runtime_error(msg);
     throw ex;
     exit(exitcode);

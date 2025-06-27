@@ -14,6 +14,9 @@
 #define LOG(LEVEL, MSG) \
     newscf_log(LEVEL, MSG, __FILE__, __LINE__)
 
+#define LOG_ASIS(LEVEL, MSG, F, L) \
+    newscf_log(LEVEL, MSG, F, L)
+
 enum NEWSCF_LOGLEVELS {
     DEV_DUMP,
     DEV_INFO,

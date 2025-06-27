@@ -1,6 +1,7 @@
 #include "libcint_wrapper.hpp"
 #include "qcex.hpp"
 #include "testing_api.hpp"
+#include <cstring>
 
 using namespace newscf::testing;
 using namespace newscf::qcex;
@@ -26,6 +27,9 @@ int main() {
     int nenv;
 
     prepare_libcint_data (geom, basis, &atm, &natm, &bas, &nbas, &env, &nenv);
+
+    Matrix<double> overlap;
+    create_overlap_matrix (atm, natm, bas, nbas, env, nenv, &overlap);
 
     destroy_environment(atm, bas, env);
     destroy_basis(basis);
