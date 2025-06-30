@@ -18,7 +18,7 @@ int main() {
     double* basis;
 
     load_molecule("test_water.xyz", &geom);
-    load_basis("def2-TZVPP.bas", &basis);
+    int basis_size = load_basis("def2-SVP.bas", &basis);
 
     int* atm;
     int* bas;
@@ -26,10 +26,17 @@ int main() {
     double* env;
     int nenv;
 
-    prepare_libcint_data (geom, basis, &atm, &natm, &bas, &nbas, &env, &nenv);
+    prepare_libcint_data (geom, basis, basis_size, &atm, &natm, &bas, &nbas, &env, &nenv);
 
     Matrix<double> overlap;
-    create_overlap_matrix (atm, natm, bas, nbas, env, nenv, &overlap);
+    Matrix<double>* matptr = &overlap;
+    create_overlap_matrix (atm, natm, bas, nbas, env, nenv, &matptr);
+
+    for (int i = 0; i < matptr->sz_rows; i++) {
+        for (int j = 0; j < matptr->sz_cols; j++) {
+            if(matptr->get(i, j) != 0) std::cout << i << ", " << j << ", " << matptr->get(i, j) << "\n";
+        }
+    }
 
     destroy_environment(atm, bas, env);
     destroy_basis(basis);

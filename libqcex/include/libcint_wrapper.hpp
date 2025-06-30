@@ -1,6 +1,10 @@
 #ifndef NEWSCF_LIBCINT_WRAPPER_HPP
 #define NEWSCF_LIBCINT_WRAPPER_HPP
 
+#ifndef CINT_OVERLAP_CACHE
+#define CINT_OVERLAP_CACHE 1024
+#endif
+
 #include "matrix.hpp"
 
 namespace newscf::qcex {
@@ -18,7 +22,7 @@ namespace newscf::qcex {
 
     void destroy_environment(int* atm, int* bas, double* env);
 
-    void create_overlap_matrix(int* atm, int natm, int* bas, int nbas, double* env, int nenv, Matrix<double>* overlap_matrix);
+    void create_overlap_matrix(int* atm, int natm, int* bas, int nbas, double* env, int nenv, Matrix<double>** overlap_matrix);
 
 
 }

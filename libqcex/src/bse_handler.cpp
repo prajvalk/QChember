@@ -4,7 +4,7 @@
 #include "qcex.hpp"
 #include "qcex_utils.hpp"
 #include "logging_api.hpp"
-void _bse_handler_load_basis(std::string filename, double** basis) {
+int _bse_handler_load_basis(std::string filename, double** basis) {
     std::ifstream infile(filename);
     if (!infile.is_open()) {
         HANDLE_ERROR("Failed to open basis file " + filename, 105);
@@ -134,12 +134,14 @@ void _bse_handler_load_basis(std::string filename, double** basis) {
     (*basis)[i++] = 0.0;
 
     infile.close();
+
+    return ndoubles;
 }
 
 namespace newscf::qcex {
 
-    void load_basis (std::string filename, double** basis) {
-        _bse_handler_load_basis (filename, basis);
+    int load_basis (std::string filename, double** basis) {
+        return _bse_handler_load_basis (filename, basis);
     }
 
     void destroy_basis (double* basis) {

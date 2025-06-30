@@ -62,6 +62,8 @@ static const std::unordered_map<std::string, int> periodic_table = {
     {"Mc", 115}, {"Lv", 116}, {"Ts", 117}, {"Og", 118}
 };
 
+constexpr double angstrom_to_bohr = 1.8897259886;
+
 inline int get_atomic_number(const std::string& symbol_raw) {
 
     std::string symbol = normalize_symbol(symbol_raw);
