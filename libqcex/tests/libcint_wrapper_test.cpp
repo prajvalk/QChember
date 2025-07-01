@@ -1,4 +1,3 @@
-#include "libcint_wrapper.hpp"
 #include "qcex.hpp"
 #include "testing_api.hpp"
 #include <cstring>
@@ -17,28 +16,22 @@ int main() {
     double* geom;
     double* basis;
 
-    load_molecule("test_water.xyz", &geom);
+    int molecule_size = load_molecule("test_water.xyz", &geom);
     int basis_size = load_basis("def2-SVP.bas", &basis);
 
-    int* atm;
-    int* bas;
-    int natm, nbas;
-    double* env;
-    int nenv;
+    IntegralEngineHandle handle;
 
-    prepare_libcint_data (geom, basis, basis_size, &atm, &natm, &bas, &nbas, &env, &nenv);
+    intialize_handle(geom, molecule_size, basis, basis_size, &handle);
+    Matrix<double>* ovp = nullptr;
+    calculate_overlap_matrix (&handle, &ovp);
 
-    Matrix<double> overlap;
-    Matrix<double>* matptr = &overlap;
-    create_nuclear_matrix (atm, natm, bas, nbas, env, nenv, &matptr);
-
-    for (int i = 0; i < matptr->sz_rows; i++) {
-        for (int j = 0; j < matptr->sz_cols; j++) {
-            if(matptr->get(i, j) != 0) std::cout << i << ", " << j << ", " << matptr->get(i, j) << "\n";
+    for (int i = 0; i < ovp->sz_rows; i++) {
+        for (int j = 0; j < ovp->sz_cols; j++) {
+            if(ovp->get(i, j) != 0) std::cout << i << ", " << j << ", " << ovp->get(i, j) << "\n";
         }
     }
 
-    destroy_environment(atm, bas, env);
+    destroy_handle(&handle);
     destroy_basis(basis);
     destroy_molecule(geom);
 

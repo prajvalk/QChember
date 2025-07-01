@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <sstream>
 
-void _load_molecule_internal_geom(const std::string& fn, double** space) {
+int _load_molecule_internal_geom(const std::string& fn, double** space) {
     LOG(INFO, "Loading molecular geometry from file " + fn);
 
     std::ifstream stream(fn);
@@ -42,8 +42,7 @@ void _load_molecule_internal_geom(const std::string& fn, double** space) {
         HANDLE_ERROR("Memory allocation failed for geometry", 104);
     }
 
-    (*space)[0] = static_cast<double>(molecule_size);
-    int offset = 1;
+    int offset = 0;
 
     int atoms_read = 0;
     while (atoms_read < molecule_size && std::getline(stream, line)) {
@@ -74,12 +73,14 @@ void _load_molecule_internal_geom(const std::string& fn, double** space) {
     }
 
     LOG(INFO, "Successfully loaded " + std::to_string(molecule_size) + " atoms from geometry.");
+
+    return molecule_size;
 }
 
 namespace newscf::qcex {
 
-    void load_molecule (std::string filename, double** molecule) {
-        _load_molecule_internal_geom (filename, molecule);
+    int load_molecule (std::string filename, double** molecule) {
+        return _load_molecule_internal_geom (filename, molecule);
     }
 
     void destroy_molecule (double* molecule) {
