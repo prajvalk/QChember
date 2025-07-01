@@ -24,6 +24,10 @@ namespace newscf::qcex {
 
     void create_overlap_matrix(int* atm, int natm, int* bas, int nbas, double* env, int nenv, Matrix<double>** overlap_matrix);
 
+    void create_kinetic_matrix(int* atm, int natm, int* bas, int nbas, double* env, int nenv, Matrix<double>** kin_matrix);
+
+    void create_nuclear_matrix(int* atm, int natm, int* bas, int nbas, double* env, int nenv, Matrix<double>** nuc_matrix);
+
 
 }
 

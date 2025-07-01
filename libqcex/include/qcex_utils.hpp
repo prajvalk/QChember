@@ -124,5 +124,9 @@ inline double parse_fortran_double(const std::string& token) {
     return std::stod(fixed_token);
 }
 
+inline long long fact2(int i) {
+    if (i <= 1) return 1;
+    return i * fact2(i - 2);
+}
 
 #endif

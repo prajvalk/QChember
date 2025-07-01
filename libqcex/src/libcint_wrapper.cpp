@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <cstring>
+#include <cmath>
 #include "qcex_utils.hpp"
 
 #include "libcint_wrapper.hpp"
@@ -122,7 +123,7 @@ void newscf::qcex::prepare_libcint_data(
         // COORD PTR; env will have sequential storage (all atom coords are stored first then basis info is stored)
         (*atm_out) [i * ATM_SLOTS + PTR_COORD] = 3 * i + PTR_ENV_START;
         // Nuclear Model
-        (*atm_out) [i * ATM_SLOTS + NUC_MOD_OF] = 0;
+        (*atm_out) [i * ATM_SLOTS + NUC_MOD_OF] = 1;
         // ECP Zeta pointer (unsupported for now)
         (*atm_out) [i * ATM_SLOTS + PTR_ZETA] = 0;
         // Fraction Charge
@@ -201,14 +202,46 @@ void newscf::qcex::prepare_libcint_data(
             (*bas_out)[bas_ptr + ANG_OF]    = l;          // Shell Angular Momentum
             (*bas_out)[bas_ptr + NPRIM_OF]  = ncontr;     // Number of Primitive GTOs
             (*bas_out)[bas_ptr + NCTR_OF]   = 1;          // Compound contractions unsupported
-            (*bas_out)[bas_ptr + KAPPA_OF]  = -1;         // Spherical type basis; cartesian or spinor basis will be implemented in the future
+            (*bas_out)[bas_ptr + KAPPA_OF]  = 0;         // Spherical type basis; cartesian or spinor basis will be implemented in the future
             (*bas_out)[bas_ptr + PTR_EXP]   = env_exp_ptr;  // where are my exponents strored in env?
             (*bas_out)[bas_ptr + PTR_COEFF] = env_coef_ptr; // where are my coefficients stored?
             (*bas_out)[bas_ptr + RESERVE_BASLOT] = 0;      // No idea
-            for (int i = 0; i < 2 * ncontr; i += 2) {
-                (*env_out)[env_exp_ptr++] = basis[basi + i];
-                (*env_out)[env_coef_ptr++] = basis[basi + i + 1];
+
+            // BSE doesn't (always) normalize their CGTOs and PGTOs; and QChem isn't very happy
+            // sigh........
+            // guess how I found out?
+            //
+            double* exp = new double[ncontr];  // TODO: Eliminate the need for a seperate workspace
+            double* coeff = new double[ncontr];
+
+            // 1. Primitive normalization
+            for (int i = 0, j = 0; i < 2 * ncontr; i += 2, j++) {
+                exp[j] = basis[basi + i];
+                coeff[j] = basis[basi + i + 1] * CINTgto_norm(l, exp[j]);
             }
+
+            // 2. Contracted normalization
+            double norm_factor = 0.0;
+            for (int i = 0; i < ncontr; i++) {
+                for (int j = 0; j < ncontr; j++) {
+                    double a = exp[i], b = exp[j];
+                    double p = a + b;
+                    double Sij = 0.5 * std::tgamma((2 * l + 3) / 2.0) / std::pow(p, (2 * l + 3) / 2.0);
+                    norm_factor += coeff[i] * coeff[j] * Sij;
+                }
+            }
+            norm_factor = 1.0 / std::sqrt(norm_factor);
+
+            // 3. Store normalized exponents and coefficients
+            for (int i = 0; i < ncontr; i++) {
+                (*env_out)[env_exp_ptr++] = exp[i];
+                (*env_out)[env_coef_ptr++] = coeff[i] * norm_factor;
+            }
+
+            delete[] exp;
+            delete[] coeff;
+            //
+            // BSE; please normalize
             basi = next_shell;
             bas_ptr += BAS_SLOTS;
             env_ptr += 2 * ncontr;
@@ -323,6 +356,152 @@ void newscf::qcex::create_overlap_matrix(
                     double val = buf[ii * dj + jj];
                     (*overlap_matrix)->set(ioff + ii, joff + jj, val);
                     (*overlap_matrix)->set(joff + jj, ioff + ii, val);
+                }
+            }
+        }
+    }
+
+    CINTdel_optimizer(&opt);
+
+    delete[] shell_to_index;
+    delete[] cache;
+    delete[] shells;
+    delete[] dims;
+
+    free(buf);
+}
+
+void newscf::qcex::create_kinetic_matrix(
+    int* atm, int natm,
+    int* bas, int nbas,
+    double* env, int nenv,
+    Matrix<double>** out  // caller must pass address of pointer
+) {
+    int natoms = natm / ATM_SLOTS;
+    int nshells = nbas / BAS_SLOTS;
+    int nbf_tot = 0;
+
+    double* cache = new double[CINT_OVERLAP_CACHE];
+    CINTOpt* opt = nullptr;
+    int1e_kin_optimizer(&opt, atm, natoms, bas, nshells, env);
+
+    int* shell_to_index = new int[nshells + 1];
+    shell_to_index[0] = 0; 
+    int buffmax = 0;
+    for (int i = 0; i < nshells; i++) {
+        int l = static_cast<int>(bas[BAS_SLOTS * i + ANG_OF]);
+        int nctr = static_cast<int>(bas[BAS_SLOTS * i + NPRIM_OF]);
+        int nbf = (2 * l + 1) * nctr;
+        shell_to_index[i + 1] = shell_to_index[i] + nbf;
+        nbf_tot += nbf;
+        if (buffmax < nbf * nbf) buffmax = nbf * nbf;
+    }
+
+    (*out) = new Matrix<double>(nbf_tot, nbf_tot);
+
+    double* buf = reinterpret_cast<double*>(malloc(sizeof(double) * buffmax));
+    int* shells = new int[2];
+    int* dims = new int[3]{1, 1, 1};
+
+    for (int i = 0; i < nshells; i++) {
+        for (int j = 0; j <= i; j++) {
+            shells[0] = i;
+            shells[1] = j;
+            int di = CINTcgto_spheric(i, bas);
+            int dj = CINTcgto_spheric(j, bas);
+            dims[0] = di;
+            dims[1] = dj;
+
+            memset(buf, 0, sizeof(double) * di * dj);
+
+            int ncomp = int1e_kin_sph(buf, dims, shells, atm, natoms, bas, nshells, env, opt, cache);
+
+            if (ncomp != 1) {
+                LOG(DEV_ERROR, "libcint return value is zero for kineric matrix computation.");
+                HANDLE_ERROR ("Internal error in computing the kinetic matrix.", 561);
+            }
+
+            int ioff = shell_to_index[i];
+            int joff = shell_to_index[j];
+
+            for (int ii = 0; ii < di; ii++) {
+                for (int jj = 0; jj < dj; jj++) {
+                    double val = buf[ii * dj + jj];
+                    (*out)->set(ioff + ii, joff + jj, val);
+                    (*out)->set(joff + jj, ioff + ii, val);
+                }
+            }
+        }
+    }
+
+    CINTdel_optimizer(&opt);
+
+    delete[] shell_to_index;
+    delete[] cache;
+    delete[] shells;
+    delete[] dims;
+
+    free(buf);
+}
+
+void newscf::qcex::create_nuclear_matrix(
+    int* atm, int natm,
+    int* bas, int nbas,
+    double* env, int nenv,
+    Matrix<double>** out  // caller must pass address of pointer
+) {
+    int natoms = natm / ATM_SLOTS;
+    int nshells = nbas / BAS_SLOTS;
+    int nbf_tot = 0;
+
+    double* cache = new double[CINT_OVERLAP_CACHE];
+    CINTOpt* opt = nullptr;
+    int1e_nuc_optimizer(&opt, atm, natoms, bas, nshells, env);
+
+    int* shell_to_index = new int[nshells + 1];
+    shell_to_index[0] = 0; 
+    int buffmax = 0;
+    for (int i = 0; i < nshells; i++) {
+        int l = static_cast<int>(bas[BAS_SLOTS * i + ANG_OF]);
+        int nctr = static_cast<int>(bas[BAS_SLOTS * i + NPRIM_OF]);
+        int nbf = (2 * l + 1) * nctr;
+        shell_to_index[i + 1] = shell_to_index[i] + nbf;
+        nbf_tot += nbf;
+        if (buffmax < nbf * nbf) buffmax = nbf * nbf;
+    }
+
+    (*out) = new Matrix<double>(nbf_tot, nbf_tot);
+
+    double* buf = reinterpret_cast<double*>(malloc(sizeof(double) * buffmax));
+    int* shells = new int[2];
+    int* dims = new int[3]{1, 1, 1};
+
+    for (int i = 0; i < nshells; i++) {
+        for (int j = 0; j <= i; j++) {
+            shells[0] = i;
+            shells[1] = j;
+            int di = CINTcgto_spheric(i, bas);
+            int dj = CINTcgto_spheric(j, bas);
+            dims[0] = di;
+            dims[1] = dj;
+
+            memset(buf, 0, sizeof(double) * di * dj);
+
+            int ncomp = int1e_nuc_sph(buf, dims, shells, atm, natoms, bas, nshells, env, opt, cache);
+
+            if (ncomp != 1) {
+                LOG(DEV_ERROR, "libcint return value is zero for nuclear attraction matrix computation.");
+                HANDLE_ERROR ("Internal error in computing the nuclear attraction matrix.", 561);
+            }
+
+            int ioff = shell_to_index[i];
+            int joff = shell_to_index[j];
+
+            for (int ii = 0; ii < di; ii++) {
+                for (int jj = 0; jj < dj; jj++) {
+                    double val = buf[ii * dj + jj];
+                    (*out)->set(ioff + ii, joff + jj, val);
+                    (*out)->set(joff + jj, ioff + ii, val);
                 }
             }
         }

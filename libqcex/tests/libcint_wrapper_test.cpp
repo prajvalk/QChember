@@ -30,7 +30,7 @@ int main() {
 
     Matrix<double> overlap;
     Matrix<double>* matptr = &overlap;
-    create_overlap_matrix (atm, natm, bas, nbas, env, nenv, &matptr);
+    create_nuclear_matrix (atm, natm, bas, nbas, env, nenv, &matptr);
 
     for (int i = 0; i < matptr->sz_rows; i++) {
         for (int j = 0; j < matptr->sz_cols; j++) {
