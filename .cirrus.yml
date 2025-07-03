@@ -5,7 +5,7 @@ container:
 task: 
   name: Install dependencies
   install_script:
-    - sudo apt-get install -y gcc g++ cmake openblas
+    - apt-get install -y gcc g++ cmake openblas
 
 task:
   name: Build new_scf
