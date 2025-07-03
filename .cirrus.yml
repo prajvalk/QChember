@@ -7,7 +7,7 @@ task:
   
   install_dependencies_script:
     - apt-get update
-    - apt-get install -y gcc g++ libopenblas-dev
+    - apt-get install -y gcc g++ libopenblas-dev cmake
     
   configure_script:
     - mkdir build
