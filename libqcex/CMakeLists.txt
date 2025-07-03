@@ -32,6 +32,8 @@ endif()
 
 # === Build each test in tests/*.cpp ===
 file(GLOB LIBQCEX_TESTS tests/*.cpp)
+file(GLOB LIBQCEX_TESTS_DATA tests/data/*)
+file(COPY ${LIBQCEX_TESTS_DATA} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 foreach(test_file ${LIBQCEX_TESTS})
     get_filename_component(test_name ${test_file} NAME_WE)

@@ -16,7 +16,7 @@ using newscf::libmatrix::Matrix;
 using newscf::qcex::IntegralEngineHandle;
 
 #ifndef LIBCINT_CACHE_SIZE
-#define LIBCINT_CACHE_SIZE 1024
+#define LIBCINT_CACHE_SIZE 2048
 #endif
 
 void _diagonalize_hcore (Matrix<double>* Hcore, Matrix<double>* overlap, Matrix<double>** coeffecients_matrix, Matrix<double>** eigenvalues) {
@@ -165,8 +165,8 @@ namespace newscf::qcex {
         Matrix<double>* F = nullptr;
         // SCF loop
         std::cout << std::setprecision(16);
-        for (int i = 0; i < 10; i++) {
-            std::cout << "iter=" << (i+1);
+        for (int j = 0; j < 10; j++) {
+            std::cout << "iter=" << (j+1);
             _build_rhf_density_matrix (C, &D, handle->nbf_tot, nocc);
             _compute_fock (handle, &T, &D, &F);
             _diagonalize_hcore (F, overlap, &C, &eval);
