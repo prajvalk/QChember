@@ -59,9 +59,8 @@ namespace newscf::qcex {
         AOT_DISK     // Ahead of Time, disk written Calculations
     };
 
-    struct Options {
-        ComputeType computeType;
-    };
+    // Atom SCF
+    void  atom_rhf_energies   (IntegralEngineHandle* handle, double** energies);
 }
 
 #endif

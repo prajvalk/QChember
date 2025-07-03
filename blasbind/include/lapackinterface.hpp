@@ -94,5 +94,16 @@ void newscf_dsygv(int* itype, char* jobz, char* uplo,
                  double* w, double* work, int* lwork,
                  int* info);
 
+void newscf_dggev(char* jobvl, char* jobvr,
+                int* n, double* a, int* lda,
+                double* b, int* ldb,
+                double* alphar, double* alphai,
+                double* beta,
+                double* vl, int* ldvl,
+                double* vr, int* ldvr,
+                double* work, int* lwork,
+                int* info);
+
+
 
 #endif

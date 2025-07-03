@@ -13,23 +13,18 @@ int main() {
 
     add_test("water/def2-TZVPP", h);
 
-    double* geom;
+    double* geom = new double[4] {2, 0, 0, 0};
     double* basis;
 
-    int molecule_size = load_molecule("test_water.xyz", &geom);
+    int molecule_size = 1;
     int basis_size = load_basis("def2-SVP.bas", &basis);
 
     IntegralEngineHandle handle;
 
     intialize_handle(geom, molecule_size, basis, basis_size, &handle);
-    Matrix<double>* ovp = nullptr;
-    calculate_overlap_matrix (&handle, &ovp);
-
-    for (int i = 0; i < ovp->sz_rows; i++) {
-        for (int j = 0; j < ovp->sz_cols; j++) {
-            if(ovp->get(i, j) != 0) std::cout << i << ", " << j << ", " << ovp->get(i, j) << "\n";
-        }
-    }
+    
+    double* ener = nullptr;
+    atom_rhf_energies (&handle, &ener);
 
     destroy_handle(&handle);
     destroy_basis(basis);

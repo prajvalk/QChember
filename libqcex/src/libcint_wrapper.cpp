@@ -275,6 +275,15 @@ namespace newscf::qcex {
 
     void  intialize_handle (double* molecule, int molecule_size, double* basis, int basis_size, IntegralEngineHandle* handle) {
         _prepare_libcint_data (molecule, molecule_size, basis, basis_size, &(handle->atm), &(handle->natm), &(handle->bas), &(handle->nbas), &(handle->env), &(handle->nenv));
+        /*for(int i = 0; i < handle->natm; i++)
+            std::cout << handle->atm[i] << "\n";
+        std::cout << "\n";
+        for(int i = 0; i < handle->nbas; i++)
+            std::cout << handle->bas[i] << "\n";
+        std::cout << "\n";
+        for(int i = 0; i < handle->nenv; i++)
+            std::cout << handle->env[i] << "\n";
+        std::cout << "\n";*/
         handle->natm /= ATM_SLOTS;
         handle->nbas /= BAS_SLOTS;
         handle->shell_to_index = reinterpret_cast<int*> (malloc(sizeof(int) * (handle->nbas + 1)));
@@ -282,9 +291,7 @@ namespace newscf::qcex {
         handle->nbf_tot = 0;
         handle->nbf_max = 0;
         for (int i = 0; i < handle->nbas; i++) {
-            int l     = static_cast<int> (handle->bas[i * BAS_SLOTS + ANG_OF]);
-            int nprim = static_cast<int> (handle->bas[i * BAS_SLOTS + NPRIM_OF]);
-            int nbf   = (2 * l + 1) * nprim;
+            int nbf = CINTcgto_spheric(i, handle->bas);  // correct number of contracted AOs
             handle->shell_to_index[i + 1] = handle->shell_to_index[i] + nbf;
             if (nbf > handle->nbf_max) handle->nbf_max = nbf;
             handle->nbf_tot += nbf;
@@ -305,6 +312,7 @@ namespace newscf::qcex {
     void  calculate_kinetic_energy_matrix(IntegralEngineHandle* handle, Matrix<double>** output) {
         _cint1e_wrapper (handle, int1e_kin_sph, int1e_kin_optimizer, output);
     }
+
     void  calculate_nuclear_attraction_matrix(IntegralEngineHandle* handle, Matrix<double>** output) {
         _cint1e_wrapper (handle, int1e_nuc_sph, int1e_nuc_optimizer, output);
     }
