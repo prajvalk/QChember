@@ -2,6 +2,11 @@ container:
   image: debian:latest
   cpu: 4
 
+task: 
+  name: Install dependencies
+  install_script:
+    - sudo apt-get install -y gcc g++ cmake openblas
+
 task:
   name: Build new_scf
   configure_script:
