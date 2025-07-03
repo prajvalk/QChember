@@ -1,17 +1,18 @@
-project(libqcex LANGUAGES CXX)
+project(qcex LANGUAGES CXX)
 
 # Collect source files
 file(GLOB_RECURSE LIBQCEX_SRC src/*.cpp)
 
 # Create shared library
-add_library(libqcex SHARED ${LIBQCEX_SRC})
-target_include_directories(libqcex PUBLIC
+add_library(qcex SHARED ${LIBQCEX_SRC})
+target_include_directories(qcex PUBLIC
     include
+    ../qcint/include
     ../common/include
 )
-target_link_libraries(libqcex
+target_link_libraries(qcex
     PUBLIC
-    libmatrix
+    matrix
     blasbind
     cint
     ${BLAS_LIBRARIES}
@@ -20,12 +21,12 @@ target_link_libraries(libqcex
 
 # Apply build-specific flags
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(libqcex PRIVATE -Og -g3 -fno-openmp)
+    target_compile_options(qcex PRIVATE -Og -g3 -fno-openmp)
 else()
-    target_compile_options(libqcex PRIVATE -O3 -march=native)
+    target_compile_options(qcex PRIVATE -O3 -march=native)
     if(OpenMP_CXX_FOUND)
-        target_compile_options(libqcex PRIVATE ${OpenMP_CXX_FLAGS})
-        target_link_libraries(libqcex PRIVATE OpenMP::OpenMP_CXX)
+        target_compile_options(qcex PRIVATE ${OpenMP_CXX_FLAGS})
+        target_link_libraries(qcex PRIVATE OpenMP::OpenMP_CXX)
     endif()
 endif()
 
@@ -43,8 +44,8 @@ foreach(test_file ${LIBQCEX_TESTS})
 
     target_link_libraries(${test_name}
         PRIVATE
-        libqcex
-        libmatrix
+        qcex
+        matrix
         blasbind
         cint
         ${BLAS_LIBRARIES}
@@ -60,4 +61,7 @@ foreach(test_file ${LIBQCEX_TESTS})
             target_link_libraries(${test_name} PRIVATE OpenMP::OpenMP_CXX)
         endif()
     endif()
+
+    get_filename_component(test_name ${test_file} NAME_WE)
+    add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()

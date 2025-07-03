@@ -34,4 +34,7 @@ foreach(test_file ${BLASBIND_TESTS})
             target_link_libraries(${test_name} PRIVATE OpenMP::OpenMP_CXX)
         endif()
     endif()
+
+    get_filename_component(test_name ${test_file} NAME_WE)
+    add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()

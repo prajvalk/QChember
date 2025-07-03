@@ -34,6 +34,8 @@ find_package(LAPACK REQUIRED)
 
 include_directories(common/include)
 
+enable_testing()
+
 # Subdirectories
 add_subdirectory(blasbind)
 add_subdirectory(libmatrix)
