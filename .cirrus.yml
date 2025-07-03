@@ -1,15 +1,12 @@
 container:
   image: kitware:cmake
-  cpu: 4
-
-task: 
-  name: Install dependencies
-  install_script:
-    - apt-get update
-    - apt-get install -y openblas
+  cpu: 8
 
 task:
   name: Build new_scf
+  install_dependencies_script:
+    - apt-get update
+    - apt-get install -y openblas
   configure_script:
     - mkdir build
     - cd build
