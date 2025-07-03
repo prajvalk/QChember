@@ -4,9 +4,11 @@ container:
 
 task:
   name: Build new_scf
+  
   install_dependencies_script:
     - apt-get update
-    - apt-get install -y openblas
+    - apt-get install -y gcc g++ libopenblas-dev
+    
   configure_script:
     - mkdir build
     - cd build
@@ -15,4 +17,4 @@ task:
 
   make_script:
     - cd build
-    - make -j4
+    - make -j8
