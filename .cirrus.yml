@@ -10,6 +10,7 @@ task:
     - apt-get install -y gcc g++ libopenblas-dev cmake
     
   configure_script:
+    - git submodule update --init --recursive
     - mkdir build
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++
