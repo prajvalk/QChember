@@ -71,6 +71,83 @@ void _build_rhf_density_matrix (newscf::ndtx::NDTX<double>& C, newscf::ndtx::NDT
     }
 }
 
+void _build_eri_tensor (IntegralEngineHandle* handle, newscf::ndtx::NDTX<double>& ERI) {
+    const int nbf = handle->nbf_tot;
+    const int nshells = handle->nbas;
+    ERI.resizeToTensor4D(nbf);
+    ERI.fill(0);
+
+    CINTOpt* opt = nullptr;
+    int2e_optimizer(&opt, handle->atm, handle->natm, handle->bas, handle->nbas, handle->env);
+    double* cache = new double[LIBCINT_CACHE_SIZE];
+
+    const int max_prim = handle->nbf_max * handle->nbf_max * handle->nbf_max * handle->nbf_max;
+    double* buf = new double[max_prim];
+
+    for (int i = 0; i < nshells; ++i) {
+        int di = CINTcgto_spheric(i, handle->bas);
+        int ioff = handle->shell_to_index[i];
+
+        for (int j = 0; j <= i; ++j) {
+            int dj = CINTcgto_spheric(j, handle->bas);
+            int joff = handle->shell_to_index[j];
+
+            for (int k = 0; k < nshells; ++k) {
+                int dk = CINTcgto_spheric(k, handle->bas);
+                int koff = handle->shell_to_index[k];
+
+                for (int l = 0; l <= k; ++l) {
+                    int dl = CINTcgto_spheric(l, handle->bas);
+                    int loff = handle->shell_to_index[l];
+
+                    // Enforce (ij) ≤ (kl) in lex order
+                    if ((i * nshells + j) < (k * nshells + l)) continue;
+
+                    int shls[4] = {i, j, k, l};
+                    int dims[4] = {di, dj, dk, dl};
+
+                    int ncomp = int2e_sph(buf, dims, shls,
+                                          handle->atm, handle->natm,
+                                          handle->bas, handle->nbas,
+                                          handle->env, opt, cache);
+                    if (ncomp != 1) HANDLE_ERROR("int2e_sph failed", 1);
+
+                    for (int ii = 0; ii < di; ++ii) {
+                        int mu = ioff + ii;
+                        for (int jj = 0; jj < dj; ++jj) {
+                            int nu = joff + jj;
+                            for (int kk = 0; kk < dk; ++kk) {
+                                int lam = koff + kk;
+                                for (int ll = 0; ll < dl; ++ll) {
+                                    int sig = loff + ll;
+
+                                    int idx = (((ii * dj + jj) * dk + kk) * dl + ll);
+                                    double val = buf[idx];
+
+                                    ERI.tensor4DSet(mu, nu, lam, sig, val);
+                                    ERI.tensor4DSet(nu, mu, lam, sig, val);
+                                    ERI.tensor4DSet(mu, nu, sig, lam, val);
+                                    ERI.tensor4DSet(nu, mu, sig, lam, val);
+                                    ERI.tensor4DSet(lam, sig, mu, nu, val);
+                                    ERI.tensor4DSet(lam, sig, nu, mu, val);
+                                    ERI.tensor4DSet(sig, lam, mu, nu, val);
+                                    ERI.tensor4DSet(sig, lam, nu, mu, val);
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    CINTdel_optimizer(&opt);
+    delete[] cache;
+    delete[] buf;
+}
+
+
 void _compute_fock(
     IntegralEngineHandle* handle,
     newscf::ndtx::NDTX<double>& H,
@@ -205,7 +282,11 @@ namespace newscf::qcex {
         NDTX<double> F; // Fock Tensor
         NDTX<double> C; // Coefficient Matrix
 
-        int     ITYPE    = 1;
+        _build_eri_tensor(handle, F);
+
+        F.vectorPrint();
+
+        /*int     ITYPE    = 1;
         char    JOBZ     = 'V';
         char    UPLO     = 'U';
         int     N        = handle->nbf_tot;
@@ -261,6 +342,6 @@ namespace newscf::qcex {
         delete[] W;
         delete[] WORK;
         delete[] A;
-        delete[] B;
+        delete[] B;*/
     }
 }

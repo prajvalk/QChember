@@ -118,7 +118,8 @@ namespace newscf::ndtx {
         }
 
         inline T tensor4DGet (const size_t i, const size_t j, const size_t k, const size_t l) {
-            return data[l * dims[2] + k * dims[1] + j * dims[0] + i];
+            size_t index = ((i * dims[1] + j) * dims[2] + k) * dims[3] + l;
+            return data[index];
         }
 
         inline void vectorSet (const size_t idx, T val) {
@@ -134,7 +135,8 @@ namespace newscf::ndtx {
         }
 
         inline void tensor4DSet (const size_t i, const size_t j, const size_t k, const size_t l, const T val) {
-            data[l * dims[2] + k * dims[1] + j * dims[0] + i] = val;
+            size_t index = ((i * dims[1] + j) * dims[2] + k) * dims[3] + l;
+            data[index] = val;
         }
 
         inline size_t size () {
