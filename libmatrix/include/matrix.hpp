@@ -7,7 +7,11 @@
 #include <algorithm>
 #include <cmath>
 
+#include "../../libqcex/include/qcex_utils.hpp"
+
 namespace newscf::libmatrix {
+
+    enum NORM { L0, L1, L2, LInf };
 
     // OpenMP+SIMD Intrinsics
 

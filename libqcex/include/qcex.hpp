@@ -9,10 +9,12 @@
 
 #include <string>
 #include "matrix.hpp"
+#include "ndtx.hpp"
 
 namespace newscf::qcex {
 
     using newscf::libmatrix::Matrix;
+    using newscf::ndtx::NDTX; // <-- experimental
 
     // Level 0 Functions -- Optimized Low-Level Routines
     
@@ -49,6 +51,8 @@ namespace newscf::qcex {
     void  calculate_overlap_matrix             (IntegralEngineHandle* handle, Matrix<double>** output);
     void  calculate_kinetic_energy_matrix      (IntegralEngineHandle* handle, Matrix<double>** output);
     void  calculate_nuclear_attraction_matrix  (IntegralEngineHandle* handle, Matrix<double>** output);
+
+    void calculate_hf_matrices                 (IntegralEngineHandle* handle, NDTX<double>& T, NDTX<double>& S);
 
     // Level 2 Functions -- Quantum Chem Drivers
 

@@ -271,6 +271,60 @@ void _cint1e_wrapper (IntegralEngineHandle* handle, CINTGenericIntegral integral
     delete[] buffer;
 }
 
+void _cint1e_hf (IntegralEngineHandle* handle, newscf::ndtx::NDTX<double>& T, newscf::ndtx::NDTX<double>& S) {
+    double* buffer_K = new double[handle->nbf_max * handle->nbf_max];
+    double* buffer_N = new double[handle->nbf_max * handle->nbf_max];
+    double* buffer_S = new double[handle->nbf_max * handle->nbf_max];
+    int*    shells = new int   [2];
+    int*    dims   = new int   [3] {1, 1, 1};
+    T.resizeToMatrix(handle->nbf_tot);
+    T.fill(0);
+    S.resizeToMatrix(handle->nbf_tot);
+    T.fill(0);
+    CINTOpt* opt_K = nullptr;
+    CINTOpt* opt_N = nullptr;
+    CINTOpt* opt_S = nullptr;
+    int1e_kin_optimizer (&opt_K, handle->atm, handle->natm, handle->bas, handle->nbas, handle->env);
+    int1e_nuc_optimizer (&opt_N, handle->atm, handle->natm, handle->bas, handle->nbas, handle->env);
+    int1e_ovlp_optimizer(&opt_S, handle->atm, handle->natm, handle->bas, handle->nbas, handle->env);
+    for (int i = 0; i < handle->nbas; i++) {
+        for (int j = 0; j <= i; j++) {
+            shells[0] = i;
+            shells[1] = j;
+            dims[0]   = CINTcgto_spheric(i, handle->bas);
+            dims[1]   = CINTcgto_spheric(j, handle->bas);
+            int ioff  = handle->shell_to_index[i];
+            int joff  = handle->shell_to_index[j];
+            memset(buffer_K, 0, sizeof(double) * dims[0] * dims[1]);
+            memset(buffer_N, 0, sizeof(double) * dims[0] * dims[1]);
+            memset(buffer_S, 0, sizeof(double) * dims[0] * dims[1]);
+            int ncomp_K = int1e_kin_sph  (buffer_K, dims, shells, handle->atm, handle->natm, handle->bas, handle->nbas, handle->env, opt_K, handle->cache);
+            int ncomp_N = int1e_nuc_sph  (buffer_N, dims, shells, handle->atm, handle->natm, handle->bas, handle->nbas, handle->env, opt_N, handle->cache);
+            int ncomp_S = int1e_ovlp_sph (buffer_S, dims, shells, handle->atm, handle->natm, handle->bas, handle->nbas, handle->env, opt_S, handle->cache);
+            if (ncomp_K != 1 || ncomp_N != 1 || ncomp_S != 1) HANDLE_ERROR ("libcint 1e calculation failed.", 101);
+            for (int ii = 0; ii < dims[0]; ii++) {
+                for (int jj = 0; jj < dims[1]; jj++) {
+                    double Kval = buffer_K[ii * dims[1] + jj];
+                    double Nval = buffer_N[ii * dims[1] + jj];
+                    double Sval = buffer_S[ii * dims[1] + jj];
+                    T.matrixSet(ioff + ii, joff + jj, Kval + Nval);
+                    T.matrixSet(joff + jj, ioff + ii, Kval + Nval);
+                    S.matrixSet(ioff + ii, joff + jj, Sval);
+                    S.matrixSet(joff + jj, ioff + ii, Sval);
+                }
+            }
+        }
+    }
+    CINTdel_optimizer (&opt_K);
+    CINTdel_optimizer (&opt_N);
+    CINTdel_optimizer (&opt_S);
+    delete[] buffer_K;
+    delete[] buffer_N;
+    delete[] buffer_S;
+    delete[] dims;
+    delete[] shells;
+}
+
 namespace newscf::qcex {
 
     void  intialize_handle (double* molecule, int molecule_size, double* basis, int basis_size, IntegralEngineHandle* handle) {
@@ -315,6 +369,10 @@ namespace newscf::qcex {
 
     void  calculate_nuclear_attraction_matrix(IntegralEngineHandle* handle, Matrix<double>** output) {
         _cint1e_wrapper (handle, int1e_nuc_sph, int1e_nuc_optimizer, output);
+    }
+
+    void calculate_hf_matrices                 (IntegralEngineHandle* handle, NDTX<double>& T, NDTX<double>& S) {
+        _cint1e_hf (handle, T, S);
     }
 
 }
