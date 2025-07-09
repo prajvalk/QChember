@@ -2,8 +2,8 @@ version: v1.0
 name: Initial Pipeline
 agent:
   machine:
-    type: e1-standard-2
-    os_image: ubuntu2004
+    type: f1-standard-2
+    os_image: ubuntu2404
 blocks:
   - name: Build
     task:
@@ -12,7 +12,7 @@ blocks:
           commands:
             - checkout
             - git submodule update --init --recursive
-            - sem-version cpp 14
+            - sem-version cpp 13
             - sudo apt-get update
             - sudo apt-get install libopenblas-dev liblapack-dev -y
             - mkdir build
