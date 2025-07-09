@@ -50,7 +50,7 @@ int main() {
 
     add_test("def2-TZVPP_load", h);
 
-    load_basis("def2-TZVPP.dat", &bswork);
+    load_basis("data/def2-TZVPP.dat", &bswork);
 
         // === H ===
     TEST_ASSERT_EQ(bswork[0], 1.0, h);  // Z
