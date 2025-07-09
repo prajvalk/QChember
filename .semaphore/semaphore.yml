@@ -12,4 +12,4 @@ blocks:
           commands:
             - checkout
             - git submodule update --remote
-            - sem-version cpp 12
+            - sem-version cpp 11
