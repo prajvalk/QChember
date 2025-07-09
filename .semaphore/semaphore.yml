@@ -12,4 +12,8 @@ blocks:
           commands:
             - checkout
             - git submodule update --remote
-            - sem-version cpp 11
+            - sem-version cpp 12
+      agent:
+        machine:
+          type: f1-standard-2
+          os_image: ubuntu2404
