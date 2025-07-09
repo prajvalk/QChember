@@ -12,7 +12,7 @@ blocks:
           commands:
             - checkout
             - git submodule update --init --recursive
-            - sem-ver cpp 14
+            - sem-version cpp 14
             - sudo apt-get update
             - sudo apt-get install libopenblas-dev liblapack-dev -y
             - mkdir build
