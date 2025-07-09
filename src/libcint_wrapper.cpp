@@ -399,7 +399,8 @@ namespace newscf {
             handle->nbf_tot += nbf;
         }
     	for (int i = 0; i < handle->natm; i++) {
-    		const int Z = handle->atm[i * ATM_SLOTS + ATOM_OF];
+    		int Z = handle->atm[i * ATM_SLOTS + ATOM_OF];
+    		std::cout << "Z: " << Z << std::endl;
     		handle->nelec += Z;
     	}
         handle->cache = reinterpret_cast<double*> (malloc(sizeof(double) * LIBCINT_CACHE_SIZE));
