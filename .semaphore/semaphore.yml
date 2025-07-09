@@ -12,12 +12,22 @@ blocks:
           commands:
             - checkout
             - git submodule update --remote
-        - name: Setup
+        - name: Setup Compiler and Libraries
           commands:
             - sem-version cpp 12
             - sudo apt-get update
-            - sudo apt-get install cmake libopenblas-dev
+            - sudo apt-get install cmake libopenblas-dev liblapack-dev -y
       agent:
         machine:
           type: f1-standard-2
           os_image: ubuntu2404
+  - name: Configure Debug Build
+    task:
+      jobs:
+        - name: CMake Configure
+          commands:
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=debug -DUSE_OPENMP
+            - pushd build
+            - make -j
+            - popd
