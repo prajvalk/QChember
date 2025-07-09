@@ -45,6 +45,9 @@ namespace newscf {
 	void calculate_hf_matrices                 (IntegralEngineHandle* handle, ndtx::NDTX<double>& T, ndtx::NDTX<double>& S);
 	void calculate_eri_tensor                  (IntegralEngineHandle* handle, ndtx::NDTX<double>& ERI);
 
+	void build_rhf_density_matrix              (IntegralEngineHandle* handle, ndtx::NDTX<double>& C, ndtx::NDTX<double>& D);
+	void build_rhf_fock_matrix				   (IntegralEngineHandle* handle, ndtx::NDTX<double>& H, ndtx::NDTX<double>& D, ndtx::NDTX<double>& F, ndtx::NDTX<double>& ERI);
+
 	// ATOM SCF
 
 	struct SolverOptions {

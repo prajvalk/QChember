@@ -152,9 +152,9 @@ namespace newscf {
 
     template <typename T>
     inline void test_assert_eq (const T a, const T b, TestHandle& handle, std::string file, int lineno) {
-        if constexpr (std::is_same<T, double>::value) {
+        if constexpr (std::is_same_v<T, double>) {
             test_assert_eq (a, b, T(1e-15), handle, file, lineno);
-        } else if constexpr (std::is_same<T, float>::value) {
+        } else if constexpr (std::is_same_v<T, float>) {
             test_assert_eq (a, b, T(1e-5), handle, file, lineno);
         } else {
             test_assert_eq (a, b, T(1e-16), handle, file, lineno);

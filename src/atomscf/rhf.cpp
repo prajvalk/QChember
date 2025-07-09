@@ -7,41 +7,6 @@
 
 namespace newscf {
 
-	void build_rhf_density_matrix (ndtx::NDTX<double>& C, ndtx::NDTX<double>& D, int nbf, int nocc) {
-		for (int mu = 0; mu < nbf; ++mu) {
-			for (int nu = 0; nu < nbf; ++nu) {
-				double sum = 0.0;
-				for (int i = 0; i < nocc; ++i) {
-					sum += C.matrixGet(mu, i) * C.matrixGet(nu, i);
-				}
-				D.matrixSet(mu, nu, 2 * sum);
-			}
-		}
-	}
-
-	void compute_fock(
-		IntegralEngineHandle* handle,
-		newscf::ndtx::NDTX<double>& H,
-		newscf::ndtx::NDTX<double>& D,
-		newscf::ndtx::NDTX<double>& F,
-		newscf::ndtx::NDTX<double>& ERI) {
-		const int nbf = handle->nbf_tot;
-		for (int lam = 0; lam < nbf; ++lam) {
-			for (int sig = 0; sig <= lam; ++sig) {
-				double val = 0;
-				for (int mu = 0; mu < nbf; ++mu) {
-					for (int nu = 0; nu < nbf; ++nu) {
-						double J = ERI.tensor4DGet(mu, nu, lam, sig);
-						double K = ERI.tensor4DGet(mu, lam, nu, sig);
-						val += D.matrixGet(mu, nu) * (J - 0.5 * K);
-					}
-				}
-				F.matrixSet(lam, sig, H.matrixGet(lam, sig) + val);
-				F.matrixSet(sig, lam, H.matrixGet(lam, sig) + val);
-			}
-		}
-	}
-
 	void atomscf_rhf (const SolverOptions opts, IntegralEngineHandle* handle) {
 		using ndtx::NDTX;
 
@@ -90,6 +55,7 @@ namespace newscf {
         std::copy (S.data, S.data + N * N, B);
 
         newscf_dsygv (&ITYPE, &JOBZ, &UPLO, &N, A, &LDA, B, &LDB, W, WORK, &LWORK, &INFO);
+		S.matrixPrint();
         if (INFO != 0) HANDLE_ERROR("dsygv failed with INFO = "+std::to_string(INFO), 101);
 
         std::cout << "";
@@ -101,7 +67,7 @@ namespace newscf {
         // Build Initial Fock Matrix
         D.resizeToMatrix(N);
         F.resizeToMatrix(N);
-        build_rhf_density_matrix (C, D, handle->nbf_tot, nocc);
+        build_rhf_density_matrix (handle, C, D);
 
         double energy = 0.0;
         double last_energy = 0.0;
@@ -112,7 +78,7 @@ namespace newscf {
 
         while (iter < max_iter && rms_D > conv_thresh) {
             // Build Fock matrix
-            compute_fock(handle, T, D, F, ERI);
+            build_rhf_fock_matrix(handle, T, D, F, ERI);
 
             // Solve F C = S C E
             std::copy(F.data, F.data + N*N, A);
@@ -126,7 +92,7 @@ namespace newscf {
             NDTX<double> D_old = D;
 
             // Build new D
-            build_rhf_density_matrix(C, D, N, nocc);
+            build_rhf_density_matrix(handle, C, D);
 
             // Compute electronic energy
             double E_elec = 0.0;

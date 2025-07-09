@@ -305,7 +305,7 @@ void build_eri_tensor (IntegralEngineHandle* handle, newscf::ndtx::NDTX<double>&
 
     CINTOpt* opt = nullptr;
     int2e_optimizer(&opt, handle->atm, handle->natm, handle->bas, handle->nbas, handle->env);
-    double* cache = new double[LIBCINT_CACHE_SIZE * 2]; // TODO: check PySCF cache sizes
+    double* cache = new double[LIBCINT_CACHE_SIZE * 5]; // TODO: check PySCF cache sizes
 
     const int max_prim = handle->nbf_max * handle->nbf_max * handle->nbf_max * handle->nbf_max;
     double* buf = new double[max_prim];

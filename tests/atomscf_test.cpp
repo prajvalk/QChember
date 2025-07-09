@@ -9,10 +9,10 @@ int main() {
 	init_tests();
 
 	double* molecule;
-	int mol_size = load_molecule("data/Water.xyz", &molecule);
+	int mol_size = load_molecule("data/Helium.xyz", &molecule);
 
 	double* basis;
-	int basis_size = load_basis("data/def2-SVP.dat", &basis);
+	int basis_size = load_basis("data/aug-cc-pVQZ.dat", &basis);
 
 	IntegralEngineHandle inth;
 	initialize_handle (molecule, mol_size, basis, basis_size, &inth);
