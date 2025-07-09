@@ -27,7 +27,7 @@ blocks:
         - name: CMake Configure
           commands:
             - mkdir build
-            - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=debug -DUSE_OPENMP
+            - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=debug -DUSE_OPENMP=OFF
             - pushd build
             - make -j
             - popd
