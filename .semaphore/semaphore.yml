@@ -11,7 +11,7 @@ blocks:
         - name: Debug
           commands:
             - checkout
-            - git submodule update --remote
+            - git submodule update --init --recursive
             - sudo apt-get update
             - sudo apt-get install libopenblas-dev liblapack-dev -y
             - mkdir build
