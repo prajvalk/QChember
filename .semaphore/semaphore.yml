@@ -12,7 +12,11 @@ blocks:
           commands:
             - checkout
             - git submodule update --remote
+        - name: Setup
+          commands:
             - sem-version cpp 12
+            - apt-get update
+            - apt-get install cmake libopenblas-dev
       agent:
         machine:
           type: f1-standard-2
