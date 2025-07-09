@@ -107,6 +107,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Cache APT packages
+      uses: actions/cache@v4
+      with:
+        path: /var/cache/apt/archives
+        key: ${{ runner.os }}-apt-${{ hashFiles('**/CMakeLists.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-apt-
 
     - name: Install dependencies
       run: |
@@ -114,8 +124,10 @@ jobs:
         sudo apt-get install -y cmake libopenblas-dev liblapack-dev
 
         if [ "${{ matrix.blas }}" = "mkl" ]; then
-          wget -qO- https://registrationcenter-download.intel.com/akdlm/irc_nas/tec/17415/l_onemkl_p_2023.2.0.49541_offline.sh | sh -s -- -a -s --eula accept
-          source /opt/intel/oneapi/setvars.sh
+          wget -qO mkl.sh https://registrationcenter-download.intel.com/akdlm/irc_nas/tec/17415/l_onemkl_p_2023.2.0.49541_offline.sh
+          chmod +x mkl.sh
+          sudo ./mkl.sh -a -s --eula accept
+          echo "source /opt/intel/oneapi/setvars.sh" >> $GITHUB_ENV
         elif [ "${{ matrix.blas }}" = "blis" ]; then
           sudo apt-get install -y libblis-dev libflame-dev
         fi
