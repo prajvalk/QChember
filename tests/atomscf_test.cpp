@@ -12,7 +12,7 @@ int main() {
 	int mol_size = load_molecule("data/Helium.xyz", &molecule);
 
 	double* basis;
-	int basis_size = load_basis("data/aug-cc-pVQZ.dat", &basis);
+	int basis_size = load_basis("data/def2-SVP.dat", &basis);
 
 	IntegralEngineHandle inth;
 	initialize_handle (molecule, mol_size, basis, basis_size, &inth);
