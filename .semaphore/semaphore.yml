@@ -39,7 +39,7 @@ blocks:
             - checkout
             - git submodule update --init --recursive
             - sudo apt-get update
-            - sudo apt-get install clang clang++ libopenblas-dev liblapack-dev -y
+            - sudo apt-get install libopenblas-dev liblapack-dev -y
             - mkdir build
             - cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
             - pushd build
