@@ -11,4 +11,5 @@ blocks:
         - name: Clone
           commands:
             - checkout
-            - 'git submodule update --remote '
+            - git submodule update --remote
+            - sem-version cpp 12
