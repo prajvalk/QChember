@@ -106,6 +106,9 @@ blocks:
             - make -j
             - make test
             - popd
+      env_vars:
+        - name: SEMAPHORE_AGENT_FAIL_ON_PRE_JOB_HOOK_ERROR
+          value: 'false'
   - name: Clang 14 Build
     dependencies: []
     task:
