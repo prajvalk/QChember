@@ -51,10 +51,17 @@ namespace newscf {
 	// ATOM SCF
 
 	struct SolverOptions {
-
+		double HF_CONV_ETOL = 1e-10;
+		double HF_CONV_DTOL = 1e-10;
+		double HF_MAX_ITER  = 100;
+		bool   HF_STRONG_CONV = true;
 	};
 
-	void atomscf_rhf (SolverOptions opts, IntegralEngineHandle* handle);
+	struct HFResult {
+		double HF_ENER = 0;
+	};
+
+	void atomscf_rhf (SolverOptions opts, HFResult* result, IntegralEngineHandle* handle);
 
 }
 

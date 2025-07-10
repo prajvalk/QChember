@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <cctype>
 #include <algorithm>
+#include <cmath>
 
 namespace newscf {
 
@@ -146,7 +147,7 @@ namespace newscf {
 
     template <typename T>
     inline void test_assert_eq (const T a, const T b, const T tol, TestHandle& handle, std::string file, int lineno) {
-        if (a - b == 0) {
+        if (static_cast<T>(fabs(T(a) - T(b))) <= T(tol)) {
             handle.assertions++;
         } else {
             handle.err_msg += "\t "+file+":"+std::to_string(lineno)+" | Assertion failed at between " + std::to_string(a) + " and " + std::to_string(b) + " with tol=" + std::to_string(tol) + "\n";

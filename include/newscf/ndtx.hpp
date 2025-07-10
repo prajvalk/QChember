@@ -2,7 +2,9 @@
 #define NEWSCF_NDTX_HPP
 
 #include <bits/streambuf_iterator.h>
+#include <complex>
 #include <iostream>
+#include <math.h>
 
 namespace newscf::ndtx {
 
@@ -186,6 +188,14 @@ namespace newscf::ndtx {
                 for (int j = 0; j < dims[1]; j++)
                     if (this->matrixGet(i, j) != 0)
                         std::cout << i << ", " << j << ", " << this->matrixGet(i, j) << std::endl;
+        }
+
+        inline double rms(const NDTX<T>& other) const {
+            double rms = 0;
+            for (int i = 0; i < ndata; ++i)
+                rms += pow(this->data[i] - other.data[i], 2);
+            rms = sqrt(rms) / ndata;
+            return rms;
         }
 
     };

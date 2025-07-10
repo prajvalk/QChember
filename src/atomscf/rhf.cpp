@@ -4,10 +4,11 @@
 #include "newscf/lapackinterface.hpp"
 
 #include <cmath>
+#include <float.h>
 
 namespace newscf {
 
-	void atomscf_rhf (const SolverOptions opts, IntegralEngineHandle* handle) {
+	void atomscf_rhf (const SolverOptions opts, HFResult* result, IntegralEngineHandle* handle) {
 		using ndtx::NDTX;
 
 		NDTX<double> T;  // Hcore
@@ -43,7 +44,9 @@ namespace newscf {
 		// Build Initial Density Matrix
 		build_rhf_density_matrix(handle, C, D);
 
-		for (int i = 0; i < 100; i++) {
+		bool converged = false;
+		double oldE = 0, rmsD = DBL_MAX;
+		for (int i = 0; i < opts.HF_MAX_ITER; i++) {
 			// Build Fock Matrix
 			build_rhf_fock_matrix(handle, T, D, F, ERI);
 
@@ -64,7 +67,27 @@ namespace newscf {
 			}
 			ener *= 0.5;
 
-			std::cout << ener << std::endl;
+			// Check Convergence
+			rmsD = D_old.rms(D);
+			double deltaE = fabs(ener - oldE);
+			oldE = ener;
+
+			if (opts.HF_STRONG_CONV && rmsD < opts.HF_CONV_DTOL && deltaE < opts.HF_CONV_DTOL) {
+				converged = true;
+				break;
+			} else if (!opts.HF_STRONG_CONV && (rmsD < opts.HF_CONV_DTOL || deltaE < opts.HF_CONV_DTOL)) {
+				converged = true;
+				break;
+			}
+
+			std::cout << "iter=" << i << " ener=" << ener << " delE=" << deltaE << " rmsD=" << rmsD << std::endl;
 		}
+
+		if (!converged) {
+			LOG (WARN, "RHF SCF procedure has not converged within HF_MAX_ITER");
+			LOG (WARN, "Density Matrix RMS Error = "+std::to_string(rmsD));
+		}
+
+		result->HF_ENER = oldE;
 	}
 }

@@ -18,7 +18,13 @@ int main() {
 	initialize_handle (molecule, mol_size, basis, basis_size, &inth);
 
 	SolverOptions options;
-	atomscf_rhf (options, &inth);
+	HFResult result;
+	options.HF_STRONG_CONV = true;
+	atomscf_rhf (options, &result, &inth);
+
+	TEST_ASSERT_EQ_TOL(result.HF_ENER, -2.855160479346704, options.HF_CONV_ETOL, h);
+
+	complete_test(h);
 
 	destroy_handle (&inth);
 	destroy_molecule(molecule);
