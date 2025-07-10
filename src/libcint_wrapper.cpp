@@ -41,7 +41,7 @@ void build_uacache(const double* geom, int** cache, int natoms) {
         }
     }
     (*cache) = reinterpret_cast<int*>(newscf::malloc(ns * sizeof(int)));
-    memcpy(*cache, tc, ns * sizeof(int));
+    newscf::memcpy(*cache, tc, ns * sizeof(int));
     free(tc);
 }
 

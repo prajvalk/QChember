@@ -92,6 +92,11 @@ namespace newscf {
         return std::memset(ptr, value, size);
     }
 
+    inline void memcpy(void* dest, const void* src, const size_t size) {
+        LOG(DEV_INFO, "Copying "+std::to_string(size)+" bytes of memory.");
+        std::memcpy(dest, src, size);
+    }
+
 // Testing Toolkit
 
     struct TestHandle {
