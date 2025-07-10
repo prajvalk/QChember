@@ -81,6 +81,9 @@ blocks:
         containers:
           - name: main
             image: 'prajvalk/clang:latest'
+            env_vars:
+              - name: SEMAPHORE_AGENT_FAIL_ON_PRE_JOB_HOOK_ERROR
+                value: 'FALSE'
       jobs:
         - name: 'Build (Clang Latest, OpenBLAS, No-OpenMP, Debug)'
           commands:
