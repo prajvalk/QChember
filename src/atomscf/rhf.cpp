@@ -80,7 +80,7 @@ namespace newscf {
 				break;
 			}
 
-			std::cout << "iter=" << i << " ener=" << ener << " delE=" << deltaE << " rmsD=" << rmsD << std::endl;
+			LOG (INFO, "iter="+std::to_string(i)+" ener="+std::to_string(ener)+" delE="+std::to_string(deltaE)+" rmsD="+std::to_string(rmsD));
 		}
 
 		if (!converged) {

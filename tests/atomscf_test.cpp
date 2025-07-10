@@ -8,6 +8,8 @@ int main() {
 	h.testsuite = "atomscf";
 	init_tests();
 
+	add_test("He/def2-SVP", h);
+
 	double* molecule;
 	int mol_size = load_molecule("data/Helium.xyz", &molecule);
 
@@ -23,6 +25,21 @@ int main() {
 	atomscf_rhf (options, &result, &inth);
 
 	TEST_ASSERT_EQ_TOL(result.HF_ENER, -2.855160479346704, options.HF_CONV_ETOL, h);
+
+	complete_test(h);
+
+	destroy_handle (&inth);
+	destroy_basis(basis);
+
+	add_test("He/aug-cc-pVQZ", h);
+
+	basis_size = load_basis("data/aug-cc-pVQZ.dat", &basis);
+
+	initialize_handle(molecule, mol_size, basis, basis_size, &inth);
+
+	atomscf_rhf (options, &result, &inth);
+
+	TEST_ASSERT_EQ_TOL(result.HF_ENER, -2.86152199563245, options.HF_CONV_ETOL, h);
 
 	complete_test(h);
 
