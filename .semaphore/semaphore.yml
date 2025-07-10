@@ -8,10 +8,10 @@ agent:
     - name: main
       image: 'gcc:15.1.0'
 blocks:
-  - name: Build
+  - name: GCC Latest Build
     task:
       jobs:
-        - name: 'Build (GCC 15, OpenBLAS, No-OpenMP, Debug)'
+        - name: 'Build (GCC Latest, OpenBLAS, No-OpenMP, Debug)'
           commands:
             - checkout
             - git submodule update --init --recursive
@@ -23,7 +23,7 @@ blocks:
             - make -j
             - make test
             - popd
-        - name: 'Build (GCC 15, OpenBLAS, OpenMP, Release)'
+        - name: 'Build (GCC Latest, OpenBLAS, OpenMP, Release)'
           commands:
             - checkout
             - git submodule update --init --recursive
@@ -31,6 +31,112 @@ blocks:
             - apt-get install cmake make libopenblas-dev liblapack-dev -y
             - mkdir build
             - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=ON
+            - pushd build
+            - make -j
+            - make test
+            - popd
+    dependencies: []
+  - name: GCC 13 Build
+    dependencies: []
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu2004
+        containers:
+          - name: main
+            image: 'gcc:13'
+      jobs:
+        - name: 'Build (GCC 13, OpenBLAS, No-OpenMP, Debug)'
+          commands:
+            - checkout
+            - git submodule update --init --recursive
+            - apt-get update
+            - apt-get install cmake make libopenblas-dev liblapack-dev -y
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
+            - pushd build
+            - make -j
+            - make test
+            - popd
+        - name: 'Build (GCC 13, OpenBLAS, OpenMP, Release)'
+          commands:
+            - checkout
+            - git submodule update --init --recursive
+            - apt-get update
+            - apt-get install cmake make libopenblas-dev liblapack-dev -y
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
+            - pushd build
+            - make -j
+            - make test
+            - popd
+  - name: Clang Latest Build
+    dependencies: []
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu2004
+        containers:
+          - name: main
+            image: 'silkeh/clang:latest'
+      jobs:
+        - name: 'Build (Clang Latest, OpenBLAS, No-OpenMP, Debug)'
+          commands:
+            - checkout
+            - git submodule update --init --recursive
+            - apt-get update
+            - apt-get install cmake make libopenblas-dev liblapack-dev -y
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
+            - pushd build
+            - make -j
+            - make test
+            - popd
+        - name: 'Build (Clang Latest, OpenBLAS, OpenMP, Release)'
+          commands:
+            - checkout
+            - git submodule update --init --recursive
+            - apt-get update
+            - apt-get install cmake make libopenblas-dev liblapack-dev -y
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=ON
+            - pushd build
+            - make -j
+            - make test
+            - popd
+  - name: Clang 18 Build
+    dependencies: []
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu2004
+        containers:
+          - name: main
+            image: 'silkeh/clang:18'
+      jobs:
+        - name: 'Build (Clang 18, OpenBLAS, No-OpenMP, Debug)'
+          commands:
+            - checkout
+            - git submodule update --init --recursive
+            - apt-get update
+            - apt-get install cmake make libopenblas-dev liblapack-dev -y
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
+            - pushd build
+            - make -j
+            - make test
+            - popd
+        - name: 'Build (Clang 18, OpenBLAS, OpenMP, Release)'
+          commands:
+            - checkout
+            - git submodule update --init --recursive
+            - apt-get update
+            - apt-get install cmake make libopenblas-dev liblapack-dev -y
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=ON
             - pushd build
             - make -j
             - make test
