@@ -80,7 +80,7 @@ blocks:
           os_image: ubuntu2004
         containers:
           - name: main
-            image: 'debian:stable'
+            image: 'gcc:latest'
       jobs:
         - name: 'Build (Clang Latest, OpenBLAS, No-OpenMP, Debug)'
           commands:
@@ -115,7 +115,7 @@ blocks:
           os_image: ubuntu2004
         containers:
           - name: main
-            image: 'debian:latest'
+            image: 'gcc:latest'
       jobs:
         - name: 'Build (Clang 18, OpenBLAS, No-OpenMP, Debug)'
           commands:
