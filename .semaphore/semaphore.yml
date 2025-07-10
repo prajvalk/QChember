@@ -81,9 +81,6 @@ blocks:
         containers:
           - name: main
             image: 'prajvalk/clang:latest'
-            env_vars:
-              - name: SEMAPHORE_AGENT_FAIL_ON_PRE_JOB_HOOK_ERROR
-                value: 'FALSE'
       jobs:
         - name: 'Build (Clang Latest, OpenBLAS, No-OpenMP, Debug)'
           commands:
@@ -105,9 +102,7 @@ blocks:
             - make -j
             - make test
             - popd
-      env_vars:
-        - name: SEMAPHORE_AGENT_FAIL_ON_PRE_JOB_HOOK_ERROR
-          value: 'false'
+      env_vars: []
   - name: Clang 14 Build
     dependencies: []
     task:
