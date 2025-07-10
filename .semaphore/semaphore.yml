@@ -80,14 +80,12 @@ blocks:
           os_image: ubuntu2004
         containers:
           - name: main
-            image: archlinux
+            image: 'prajvalk/clang:latest'
       jobs:
         - name: 'Build (Clang Latest, OpenBLAS, No-OpenMP, Debug)'
           commands:
             - checkout
             - git submodule update --init --recursive
-            - pacman -Sy
-            - pacman -S clang cmake make openblas lapack -y
             - mkdir build
             - cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
             - pushd build
@@ -98,8 +96,6 @@ blocks:
           commands:
             - checkout
             - git submodule update --init --recursive
-            - pacman -Sy
-            - pacman -S clang cmake make openblas lapack -y
             - mkdir build
             - cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=ON
             - pushd build
