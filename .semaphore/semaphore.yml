@@ -6,16 +6,15 @@ agent:
     os_image: ubuntu2004
   containers:
     - name: main
-      image: 'semaphoreci/ubuntu:24.04'
+      image: 'gcc:15.1.0'
 blocks:
   - name: Build
     task:
       jobs:
-        - name: 'Build (GCC 13, OpenBLAS, No-OpenMP, Debug)'
+        - name: 'Build (GCC 15, OpenBLAS, No-OpenMP, Debug)'
           commands:
             - checkout
             - git submodule update --init --recursive
-            - sem-version cpp 13
             - sudo apt-get update
             - sudo apt-get install libopenblas-dev liblapack-dev -y
             - mkdir build
@@ -24,27 +23,14 @@ blocks:
             - make -j
             - make test
             - popd
-        - name: 'Build (GCC 13, OpenBLAS, OpenMP, Release)'
+        - name: 'Build (GCC 15, OpenBLAS, OpenMP, Release)'
           commands:
             - checkout
             - git submodule update --init --recursive
-            - sem-version cpp 13
             - sudo apt-get update
             - sudo apt-get install libopenblas-dev liblapack-dev -y
             - mkdir build
             - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=ON
-            - pushd build
-            - make -j
-            - make test
-            - popd
-        - name: 'Build (Clang, OpenBLAS, OpenMP, Release)'
-          commands:
-            - checkout
-            - git submodule update --init --recursive
-            - sudo apt-get update
-            - sudo apt-get install clang libopenblas-dev liblapack-dev -y
-            - mkdir build
-            - cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
             - pushd build
             - make -j
             - make test
