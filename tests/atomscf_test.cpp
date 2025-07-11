@@ -29,17 +29,8 @@ int main() {
 
 	complete_test(h);
 
-	destroy_molecule(molecule);
-
-	mol_size = load_molecule("data/Water.xyz", &molecule);
-	destroy_handle (&inth);
-	initialize_handle (molecule, mol_size, basis, basis_size, &inth);
-	atomscf_rhf (options, &result, &inth);
-
-	destroy_molecule(molecule);
+	destroy_handle(&inth);
 	destroy_basis(basis);
-
-	mol_size = load_molecule("data/Helium.xyz", &molecule);
 
 	add_test("He/aug-cc-pVQZ", h);
 
@@ -56,6 +47,21 @@ int main() {
 	destroy_handle (&inth);
 	destroy_molecule(molecule);
 	destroy_basis(basis);
+
+	options.ATOMSCF_USE_DIIS = true;
+
+	add_test("Ne/def2-SVP", h);
+
+	mol_size = load_molecule("data/Neon.xyz", &molecule);
+	basis_size = load_basis("data/def2-SVP.dat", &basis);
+	initialize_handle(molecule, mol_size, basis, basis_size, &inth);
+	atomscf_rhf (options, &result, &inth);
+
+	destroy_handle (&inth);
+	destroy_molecule(molecule);
+	destroy_basis(basis);
+
+	complete_test(h);
 
 	end_tests(h);
 	return h.exitcode;

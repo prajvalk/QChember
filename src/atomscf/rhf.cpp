@@ -21,10 +21,13 @@ namespace newscf {
 
 		// DIIS
 		DIIS diis;
-		diis.set_diis_nhist(5);
-		diis.set_diis_type(CDIIS);
-		diis.set_diis_dim(handle->nbf_tot);
-		diis.init();
+		if (opts.ATOMSCF_USE_DIIS) {
+			diis.set_backend(opts.DIIS_BACKEND);
+			diis.set_diis_nhist(opts.DIIS_HISTORY);
+			diis.set_diis_type(opts.ATOMSCF_DIIS_TYPE);
+			diis.set_diis_dim(handle->nbf_tot);
+			diis.init();
+		}
 
 		GeneralGEV eigensolver; // General eigensolver
 		eigensolver.set_backend(opts.HF_GEV_BACKEND);
@@ -61,11 +64,18 @@ namespace newscf {
 			// Build Fock Matrix
 			build_rhf_fock_matrix(handle, T, D, F, ERI);
 
-			diis.store (D, F);
-
-			if (i >= 3 && rmsD >= 1e-2) {
-				diis.run_CDIIS();
-				diis.build_next(F);
+			// DIIS
+			if (opts.ATOMSCF_USE_DIIS) {
+				diis.store (D, F, oldE);
+				if (i >= opts.DIIS_MIN_SCF_ITER) {
+					if (rmsD > 1e-6) {
+						diis.run_EDIIS();
+						diis.build_next(F);
+					} else {
+						diis.run_EDIIS();
+						diis.build_next(F);
+					}
+				}
 			}
 
 			// Eigendecomposition

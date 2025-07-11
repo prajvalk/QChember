@@ -9,6 +9,8 @@
 #include "lapackinterface.hpp"
 #include "ndtx.hpp"
 
+#include <cfloat>
+
 namespace newscf {
 	enum DIIS_TYPE {
 		CDIIS, EDIIS, ADIIS
@@ -19,11 +21,13 @@ namespace newscf {
 		double* D_data;  // Density Matrix Data
 		double* F_data;  // Fock Matrix Data
 		double* S_data;  // Overlap Matrix Data
+		double* E_data;  // Energy Data
 		int     dim;     // Matrix Dimension
 		int     nhist;   // Number of previous matrices to store
 		int     cptr;    // (Current) Matrix Loc Pointer; resets when to when nhist is hit
 		int     gcptr;   // Global Counter; does not reset
 		DIIS_TYPE type;
+		GeneralLinsolve_Backend backend;
 
 		// LAPACK/BLAS and Internal Workspace Parameters
 		double* coeff_vector; // output of any of run_xDIIS
@@ -43,6 +47,7 @@ namespace newscf {
 			D_data = nullptr;
 			F_data = nullptr;
 			S_data = nullptr;
+			E_data = nullptr;
 			coeff_vector = nullptr;
 			work_i1 = nullptr;
 			work_i2 = nullptr;
@@ -58,10 +63,15 @@ namespace newscf {
 		~DIIS() {
 			delete[] D_data;
 			delete[] F_data;
+			delete[] E_data;
 			delete[] work_i1;
 			delete[] work_i2;
 			delete[] work_j1;
 			delete[] work_j2;
+		}
+
+		inline void set_backend (GeneralLinsolve_Backend b) {
+			backend = b;
 		}
 
 		inline void set_diis_type(const DIIS_TYPE t) {
@@ -87,17 +97,21 @@ namespace newscf {
 			memset(D_data, 0, nhist * dim * dim * sizeof(double));
 			F_data = new double[nhist * dim * dim];
 			memset(F_data, 0, nhist * dim * dim * sizeof(double));
+			E_data = new double[nhist];
+			memset(E_data, 0, nhist * sizeof(double));
 		}
 
 		inline void set_S (const ndtx::NDTX<double>& rS) {
 			S_data = rS.data;
 		}
 
-		inline void store (const ndtx::NDTX<double>& rD, const ndtx::NDTX<double>& rF) {
-			if (cptr + 1 == nhist) cptr = 0;
+		inline void store (const ndtx::NDTX<double>& rD, const ndtx::NDTX<double>& rF, const double E) {
 			memcpy(D_data + cptr * dim * dim, rD.data, dim * dim * sizeof(double));
 			memcpy(F_data + cptr * dim * dim, rF.data, dim * dim * sizeof(double));
-			cptr++;
+
+			E_data[cptr] = E;
+
+			cptr = (cptr + 1) % nhist;
 			gcptr++;
 		}
 
@@ -127,7 +141,7 @@ namespace newscf {
 					// work_i1/FD * S -> work_i1
 					newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim, &ALPHA, work_i1, &dim, S_data, &dim, &BETA, work_i1, &dim);
 					// S * work_i2/DF -> work_i2
-					newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim, &ALPHA, S_data, &dim, S_data, &dim, &BETA, work_i2, &dim);
+					newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim, &ALPHA, S_data, &dim, work_i2, &dim, &BETA, work_i2, &dim);
 
 					// F_j * D_j -> work_j1
 					newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim, &ALPHA, F_mat_j, &dim, D_mat_j, &dim, &BETA, work_j1, &dim);
@@ -136,7 +150,7 @@ namespace newscf {
 					// work_j1/FD * S -> work_j1
 					newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim, &ALPHA, work_j1, &dim, S_data, &dim, &BETA, work_j1, &dim);
 					// S * work_j2/DF -> work_j2
-					newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim, &ALPHA, S_data, &dim, S_data, &dim, &BETA, work_j2, &dim);
+					newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim, &ALPHA, S_data, &dim, work_j2, &dim, &BETA, work_j2, &dim);
 
 					// Contract work_i1 - work_i2 (FDS - SDF)_i -> work_i1
 					for (int k = 0; k < dim * dim; k++) work_i1[k] -= work_i2[k];
@@ -183,10 +197,35 @@ namespace newscf {
 			linsolver.copy_result(coeff_vector);
 		}
 
+		inline void run_EDIIS() {
+			const double delta = 1e-8;
+			double minE = DBL_MAX;
+			const int lim = (gcptr >= nhist) ? nhist : gcptr;
+
+			// Find minimum energy
+			for (int i = 0; i < lim; i++) {
+				if (E_data[i] < minE) minE = E_data[i];
+			}
+
+			// Compute weights: inverse of shifted energies
+			double sum = 0.0;
+			for (int i = 0; i < lim; i++) {
+				coeff_vector[i] = 1.0 / (E_data[i] - minE + delta);
+				sum += coeff_vector[i];
+			}
+
+			// Normalize coefficients so sum to 1 (convex combination)
+			for (int i = 0; i < lim; i++) {
+				coeff_vector[i] /= sum;
+			}
+		}
+
+
 		inline void build_next (ndtx::NDTX<double>& nF) {
+			const int lim = (gcptr >= nhist) ? nhist : gcptr;
 			for (int i = 0; i < dim * dim; i++) {
 				double val = 0;
-				for (int k = 0; k < nhist; k++) {
+				for (int k = 0; k < lim; k++) {
 					double coeff = coeff_vector[k];
 					int idx = k * dim * dim + i;
 					val += coeff * F_data[idx];

@@ -7,6 +7,7 @@
 #ifndef NEWSCF_HPP
 #define NEWSCF_HPP
 
+#include "diis.hpp"
 #include "ndtx.hpp"
 
 
@@ -59,6 +60,12 @@ namespace newscf {
 		double HF_MAX_ITER  = 100;
 		bool   HF_STRONG_CONV = true;
 		GeneralGEV_Backend HF_GEV_BACKEND = DSYGVD;
+
+		bool ATOMSCF_USE_DIIS = false;
+		DIIS_TYPE ATOMSCF_DIIS_TYPE = EDIIS;
+		GeneralLinsolve_Backend DIIS_BACKEND = DSYSV;
+		int  DIIS_HISTORY = 6;
+		int  DIIS_MIN_SCF_ITER = 15;
 
 		bool VERBOSE = false;
 	};
