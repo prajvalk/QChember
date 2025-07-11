@@ -2,9 +2,10 @@
 #include "newscf/ndtx.hpp"
 #include "newscf/common.hpp"
 #include "newscf/lapackinterface.hpp"
+#include "newscf/diis.hpp"
 
 #include <cmath>
-#include <float.h>
+#include <cfloat>
 
 namespace newscf {
 
@@ -18,10 +19,20 @@ namespace newscf {
 		NDTX<double> F;  // Fock Matrix
 		NDTX<double> C;  // Coefficient Matrix
 
-		DSYGV eigensolver; // DYSGV eigensolver
+		// DIIS
+		DIIS diis;
+		diis.set_diis_nhist(5);
+		diis.set_diis_type(CDIIS);
+		diis.set_diis_dim(handle->nbf_tot);
+		diis.init();
+
+		GeneralGEV eigensolver; // General eigensolver
+		eigensolver.set_backend(opts.HF_GEV_BACKEND);
 
 		calculate_eri_tensor (handle, ERI);
 		calculate_hf_matrices (handle, T, S);
+
+		diis.set_S(S);
 
 		if (handle->nelec % 2 == 1) {
 			LOG (WARN, "You are trying to run a RHF calculation with an odd electron count (nelec="+std::to_string(handle->nelec)+"). Consider using ROHF or UHF instead.");
@@ -50,6 +61,13 @@ namespace newscf {
 			// Build Fock Matrix
 			build_rhf_fock_matrix(handle, T, D, F, ERI);
 
+			diis.store (D, F);
+
+			if (i >= 3 && rmsD >= 1e-2) {
+				diis.run_CDIIS();
+				diis.build_next(F);
+			}
+
 			// Eigendecomposition
 			eigensolver.set_A(F.data);
 			eigensolver.set_B(S.data);
@@ -61,11 +79,7 @@ namespace newscf {
 			build_rhf_density_matrix(handle, C, D);
 
 			// Calculate Energy
-			double ener = 0;
-			for (int j = 0; j < handle->nbf_tot * handle->nbf_tot; j++) {
-				ener += D.vectorGet(j) * (T.vectorGet(j) + F.vectorGet(j));
-			}
-			ener *= 0.5;
+			double ener = energy_contraction(D, T, F);
 
 			// Check Convergence
 			rmsD = D_old.rms(D);
@@ -81,6 +95,7 @@ namespace newscf {
 			}
 
 			LOG (INFO, "iter="+std::to_string(i)+" ener="+std::to_string(ener)+" delE="+std::to_string(deltaE)+" rmsD="+std::to_string(rmsD));
+			if (opts.VERBOSE) std::cout << "iter="+std::to_string(i)+" ener="+std::to_string(ener)+" delE="+std::to_string(deltaE)+" rmsD="+std::to_string(rmsD) << std::endl;
 		}
 
 		if (!converged) {

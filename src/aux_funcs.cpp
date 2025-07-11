@@ -39,4 +39,12 @@ namespace newscf {
 			}
 		}
 	}
+
+	double energy_contraction (ndtx::NDTX<double>& D, ndtx::NDTX<double>& H, ndtx::NDTX<double>& F) {
+		// TODO: rewrite using AVX+OpenMP
+		double ener = 0;
+		for (int i = 0; i < D.ndata; i++)
+			ener += D.vectorGet(i) * (H.vectorGet(i) + F.vectorGet(i));
+		return ener * 0.5;
+	}
 }

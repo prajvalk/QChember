@@ -12,6 +12,8 @@
 
 #include <string>
 
+#include "lapackinterface.hpp"
+
 namespace newscf {
 
 	int load_molecule (const std::string& fn, double** space);
@@ -47,6 +49,7 @@ namespace newscf {
 
 	void build_rhf_density_matrix              (IntegralEngineHandle* handle, ndtx::NDTX<double>& C, ndtx::NDTX<double>& D);
 	void build_rhf_fock_matrix				   (IntegralEngineHandle* handle, ndtx::NDTX<double>& H, ndtx::NDTX<double>& D, ndtx::NDTX<double>& F, ndtx::NDTX<double>& ERI);
+	double energy_contraction                  (ndtx::NDTX<double>& D, ndtx::NDTX<double>& H, ndtx::NDTX<double>& F);
 
 	// ATOM SCF
 
@@ -55,6 +58,9 @@ namespace newscf {
 		double HF_CONV_DTOL = 1e-10;
 		double HF_MAX_ITER  = 100;
 		bool   HF_STRONG_CONV = true;
+		GeneralGEV_Backend HF_GEV_BACKEND = DSYGVD;
+
+		bool VERBOSE = false;
 	};
 
 	struct HFResult {

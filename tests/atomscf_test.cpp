@@ -22,14 +22,24 @@ int main() {
 	SolverOptions options;
 	HFResult result;
 	options.HF_STRONG_CONV = true;
+	options.VERBOSE = true;
 	atomscf_rhf (options, &result, &inth);
 
 	TEST_ASSERT_EQ_TOL(result.HF_ENER, -2.855160479346704, options.HF_CONV_ETOL, h);
 
 	complete_test(h);
 
+	destroy_molecule(molecule);
+
+	mol_size = load_molecule("data/Water.xyz", &molecule);
 	destroy_handle (&inth);
+	initialize_handle (molecule, mol_size, basis, basis_size, &inth);
+	atomscf_rhf (options, &result, &inth);
+
+	destroy_molecule(molecule);
 	destroy_basis(basis);
+
+	mol_size = load_molecule("data/Helium.xyz", &molecule);
 
 	add_test("He/aug-cc-pVQZ", h);
 
