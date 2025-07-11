@@ -77,7 +77,7 @@ namespace newscf {
 		}
 
 		inline void init() {
-			coeff_vector = new double[nhist];
+			coeff_vector = new double[nhist + 1];
 			memset(coeff_vector, 0, nhist * sizeof(double));
 			work_i1 = new double[dim * dim];
 			work_i2 = new double[dim * dim];
@@ -108,11 +108,6 @@ namespace newscf {
 			// To compute the B matrix
 			for (int i = 0; i < lim; i++) {
 				for (int j = 0; j <= i; j++) {
-					// B_ii = 1
-					if (i == j) {
-						B.matrixSet(i, j, 1);
-						continue;
-					}
 
 					// ensure clean workspace
 					memset(work_i1, 0, dim * dim * sizeof(double));
@@ -169,15 +164,15 @@ namespace newscf {
 			for (int i = 0; i < lim; i++) {
 				linsolve_A.matrixSet(i, lim, -1);
 				linsolve_A.matrixSet(lim, i, -1);
-				linsolve_B.matrixSet(i, lim,  0);
+				linsolve_B.vectorSet(i, 0);
 			}
 
 			linsolve_A.matrixSet(lim, lim, 0);
-			linsolve_B.matrixSet(lim, lim, 1);
+			linsolve_B.vectorSet(lim, 1);
 
 			// Solve
 			GeneralLinsolve linsolver;
-			linsolver.set_N (lim);
+			linsolver.set_N (lim+1);
 			linsolver.set_NRHS (1);
 			linsolver.set_backend (DSYSV);
 			linsolver.init();
