@@ -51,6 +51,8 @@ namespace newscf {
 	void build_rhf_density_matrix              (IntegralEngineHandle* handle, ndtx::NDTX<double>& C, ndtx::NDTX<double>& D);
 	void build_rhf_fock_matrix				   (IntegralEngineHandle* handle, ndtx::NDTX<double>& H, ndtx::NDTX<double>& D, ndtx::NDTX<double>& F, ndtx::NDTX<double>& ERI);
 	double energy_contraction                  (ndtx::NDTX<double>& D, ndtx::NDTX<double>& H, ndtx::NDTX<double>& F);
+	void contract_matrix (ndtx::NDTX<double> &A, ndtx::NDTX<double> &B, ndtx::NDTX<double> &C, ndtx::NDTX<double> &D);
+	void commutator_matrix (ndtx::NDTX<double> &A, ndtx::NDTX<double> &B, ndtx::NDTX<double> &C, ndtx::NDTX<double> &D);
 
 	// ATOM SCF
 
@@ -61,7 +63,7 @@ namespace newscf {
 		bool   HF_STRONG_CONV = true;
 		GeneralGEV_Backend HF_GEV_BACKEND = DSYGVD;
 
-		bool ATOMSCF_USE_DIIS = false;
+		bool ATOMSCF_USE_DIIS = true;
 		DIIS_TYPE ATOMSCF_DIIS_TYPE = EDIIS;
 		GeneralLinsolve_Backend DIIS_BACKEND = DSYSV;
 		int  DIIS_HISTORY = 6;

@@ -1,13 +1,11 @@
 #include "newscf/lapackinterface.hpp"
 
 extern "C" {
-    void dpotrs_(char* uplo, int* n, int* nrhs,
-                  double* A, int* lda,
-                  double* B, int* ldb, int* info);
+	void dpotrf_ (char* uplo, int* n,
+				  double* A, int* lda, int* info);
 }
 
-void newscf_dpotrs(char* uplo, int* n, int* nrhs,
-                  double* A, int* lda,
-                  double* B, int* ldb, int* info) {
-    dpotrs_ (uplo, n, nrhs, A, lda, B, ldb, info);
+void newscf_dpotrf(char* uplo, int* n,
+				  double* A, int* lda, int* info) {
+	dpotrf_(uplo, n, A, lda, info);
 }

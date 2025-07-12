@@ -48,8 +48,6 @@ int main() {
 	destroy_molecule(molecule);
 	destroy_basis(basis);
 
-	options.ATOMSCF_USE_DIIS = true;
-
 	add_test("Ne/def2-SVP", h);
 
 	mol_size = load_molecule("data/Neon.xyz", &molecule);

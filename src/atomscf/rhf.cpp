@@ -58,6 +58,9 @@ namespace newscf {
 		// Build Initial Density Matrix
 		build_rhf_density_matrix(handle, C, D);
 
+		NDTX<double> pulay_commutator;
+		pulay_commutator.resizeToMatrix(handle->nbf_tot);
+
 		bool converged = false;
 		double oldE = 0, rmsD = DBL_MAX;
 		for (int i = 0; i < opts.HF_MAX_ITER; i++) {
@@ -68,11 +71,11 @@ namespace newscf {
 			if (opts.ATOMSCF_USE_DIIS) {
 				diis.store (D, F, oldE);
 				if (i >= opts.DIIS_MIN_SCF_ITER) {
-					if (rmsD > 1e-6) {
+					if (rmsD > 1e-5) {
 						diis.run_EDIIS();
 						diis.build_next(F);
 					} else {
-						diis.run_EDIIS();
+						diis.run_CDIIS();
 						diis.build_next(F);
 					}
 				}
@@ -87,6 +90,10 @@ namespace newscf {
 			// Rebuild Density Matrix
 			const NDTX<double> D_old = D;
 			build_rhf_density_matrix(handle, C, D);
+
+			// Check Pulay
+			commutator_matrix (F, D, S, pulay_commutator);
+			std::cout << "Commutator Norm:" << pulay_commutator.norm() << std::endl;
 
 			// Calculate Energy
 			double ener = energy_contraction(D, T, F);

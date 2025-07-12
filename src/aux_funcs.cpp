@@ -47,4 +47,46 @@ namespace newscf {
 			ener += D.vectorGet(i) * (H.vectorGet(i) + F.vectorGet(i));
 		return ener * 0.5;
 	}
+
+	// A * B * C -> D
+	// A * B -> D
+	// D * C -> D
+	// A * B * C -> D, all square dim x dim
+	void contract_matrix(ndtx::NDTX<double>& A, ndtx::NDTX<double>& B, ndtx::NDTX<double>& C, ndtx::NDTX<double>& D) {
+		char TRANSA = 'N';
+		char TRANSB = 'N';
+		double ALPHA = 1.0;
+		double BETA = 0.0;
+		int dim = static_cast<int>(A.dims[0]);
+
+		// Internal workspace
+		ndtx::NDTX<double> W;
+		W.resizeToMatrix(dim, dim);
+
+		// W = A * B
+		newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim,
+					 &ALPHA, A.data, &dim, B.data, &dim,
+					 &BETA, W.data, &dim);
+
+		// D = W * C
+		newscf_dgemm(&TRANSA, &TRANSB, &dim, &dim, &dim,
+					 &ALPHA, W.data, &dim, C.data, &dim,
+					 &BETA, D.data, &dim);
+	}
+
+
+	// A B C - C B A
+	void commutator_matrix (ndtx::NDTX<double> &A, ndtx::NDTX<double> &B, ndtx::NDTX<double> &C, ndtx::NDTX<double> &D) {
+		// Internal Workspace
+		ndtx::NDTX<double> W;
+		W.resizeToMatrix(A.dims[0], A.dims[1]);
+
+		contract_matrix(A, B, C, W);
+		contract_matrix(C, B, A, D);
+
+		// TODO: Parallelize and AVX
+		for (int i = 0; i < A.dims[0] * A.dims[1]; i++) {
+			D.data[i] = W.data[i] - D.data[i];
+		}
+	}
 }

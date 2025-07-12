@@ -29,6 +29,15 @@ namespace newscf::ndtx {
             delete[] dims;
         }
 
+        NDTX (T* d, int sz, size_t* ds, size_t dssz) {
+            data = new T[sz];
+            dims = new size_t[dssz];
+            std::copy(d, d + sz, data);
+            std::copy(ds, ds + dssz, dssz);
+            ndata = sz;
+            ndims = dssz;
+        }
+
         NDTX& operator=(const NDTX<T>& other) {
             if (this != &other) {
                 delete[] data;
@@ -196,6 +205,14 @@ namespace newscf::ndtx {
                 rms += pow(this->data[i] - other.data[i], 2);
             rms = sqrt(rms) / ndata;
             return rms;
+        }
+
+        inline double norm() {
+            double norm = 0;
+            for (int i = 0; i < ndata; ++i)
+                norm += pow(this->data[i], 2);
+            norm = sqrt(norm);
+            return norm;
         }
 
     };
