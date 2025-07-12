@@ -138,3 +138,49 @@ blocks:
             - make -j
             - make test
             - popd
+  - name: Intel oneAPI 2025.2
+    dependencies:
+      - Clang Latest Build
+      - GCC Latest Build
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu2004
+        containers:
+          - name: main
+            image: 'intel/oneapi-hpckit:2025.2.0-0-devel-ubuntu24.04'
+      jobs:
+        - name: 'Build (Intel MKL, Release)'
+          commands:
+            - checkout
+            - git submodule update --init --recursive
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=icpx -DCMAKE_C_COMPILER=icpc -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=ON
+            - pushd build
+            - make -j
+            - make test
+            - popd
+  - name: Intel oneAPI 2023.2
+    dependencies:
+      - Clang 14 Build
+      - GCC 13 Build
+    task:
+      agent:
+        machine:
+          type: e1-standard-2
+          os_image: ubuntu2004
+        containers:
+          - name: main
+            image: 'intel/oneapi-hpckit:2023.2.1-devel-ubuntu22.04'
+      jobs:
+        - name: 'Build (Intel MKL, Release)'
+          commands:
+            - checkout
+            - git submodule update --init --recursive
+            - mkdir build
+            - cmake -B build -DCMAKE_CXX_COMPILER=icpx -DCMAKE_C_COMPILER=icpc -DCMAKE_Fortran_COMPILER=ifx -DCMAKE_BUILD_TYPE=Release -DUSE_OPENMP=ON
+            - pushd build
+            - make -j
+            - make test
+            - popd
