@@ -7,8 +7,8 @@ set(CMAKE_CXX_STANDARD 23)
 # ================================
 # Options
 # ================================
-option(USE_OPENMP  "Enable OpenMP parallelization" OFF)
-option(USE_LIBCINT "Build with external libcint module" OFF)
+option(USE_OPENMP  "Enable OpenMP parallelization" ON)
+option(USE_LIBCINT "Build with external libcint module" ON)
 
 # ================================
 # Set Build Types
