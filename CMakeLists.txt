@@ -1,68 +1,80 @@
-cmake_minimum_required(VERSION 3.16)
-project(newscf LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.31)
+project(newscf_cis)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 23)
 
-# Build types
+
+# ================================
+# Options
+# ================================
+option(USE_OPENMP  "Enable OpenMP parallelization" OFF)
+option(USE_LIBCINT "Build with external libcint module" OFF)
+
+# ================================
+# Set Build Types
+# ================================
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type (Release or Debug)" FORCE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+            "Choose the type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-# Compiler flags per build type
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -ffast-math")
-set(CMAKE_CXX_FLAGS_DEBUG "-Og -g3 -fno-openmp -DNEWSCF_LOG_LEVEL=DEV_DUMP")
+# ================================
+# Compiler Flags
+# ================================
+set(COMMON_CXX_FLAGS "-Wall -Wextra -Wpedantic")
+set(COMMON_C_FLAGS   "-Wall -Wextra -Wpedantic")
 
-# Set SIMD explicitly for Release (optional, already in -O3)
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -g")
+# Detect compiler
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CMAKE_C_FLAGS_DEBUG   "${COMMON_C_FLAGS} -g")
+    set(CMAKE_CXX_FLAGS_DEBUG "${COMMON_CXX_FLAGS} -g")
+    set(CMAKE_C_FLAGS_RELEASE   "${COMMON_C_FLAGS} -O3 -DNDEBUG -march=native")
+    set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_CXX_FLAGS} -O3 -DNDEBUG -march=native")
 
-# OpenMP setup
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(${OpenMP_CXX_FLAGS})
-    link_libraries(${OpenMP_CXX_LIBRARIES})
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CMAKE_C_FLAGS_DEBUG   "${COMMON_C_FLAGS} -g")
+    set(CMAKE_CXX_FLAGS_DEBUG "${COMMON_CXX_FLAGS} -g")
+    set(CMAKE_C_FLAGS_RELEASE   "${COMMON_C_FLAGS} -O3 -DNDEBUG -march=native")
+    set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_CXX_FLAGS} -O3 -DNDEBUG -march=native")
+
+elseif(MSVC)
+    message(WARNING "This boilerplate currently doesn't optimize MSVC flags.")
 endif()
 
-# BLAS/LAPACK backend selection
-option(USE_MKL "Use Intel MKL" OFF)
-option(USE_OPENBLAS "Use OpenBLAS" OFF)
-option(USE_AMD_BLAS "Use AMD BLAS/libFLAME" OFF)
+# ================================
+# OpenMP
+# ================================
+if(USE_OPENMP)
+    find_package(OpenMP REQUIRED)
+    if(OpenMP_CXX_FOUND)
+        message(STATUS "Using OpenMP")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
+endif()
 
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
+include_directories(public_api)
+include_directories(private_api)
 
-include_directories(include)
+# Test Data
+set(TEST_DATA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/TestData")
+set(TEST_DATA_DEST_DIR "${CMAKE_BINARY_DIR}/TestData")
+
+add_custom_target(copy_test_data ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${TEST_DATA_SOURCE_DIR}
+        ${TEST_DATA_DEST_DIR}
+        COMMENT "Copying test data to ${TEST_DATA_DEST_DIR}"
+)
+
 enable_testing()
 
-add_subdirectory(qcint)
+add_subdirectory(src/lacis)
+add_subdirectory(src/lacislapack)
+add_subdirectory(src/newscf-utils)
 
-file(GLOB_RECURSE NEWSCF_SRC src/*.cpp)
-file(GLOB_RECURSE NEWSCF_TESTS tests/*.cpp)
+if(USE_LIBCINT)
+    add_subdirectory(src/libcint-wrapper)
+endif()
 
-add_library(newscf SHARED ${NEWSCF_SRC})
-target_include_directories(newscf PUBLIC qcint/include)
-target_link_libraries(newscf PUBLIC cint ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-
-file(GLOB_RECURSE NEWSCF_DATA data/*)
-file(COPY ${NEWSCF_DATA} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/data)
-
-foreach (test_file ${NEWSCF_TESTS})
-    get_filename_component(test_name ${test_file} NAME_WE)
-    add_executable(${test_name} ${test_file})
-
-    target_include_directories(${test_name} PRIVATE include)
-    target_link_libraries(${test_name} PRIVATE newscf cint ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        target_compile_options(${test_name} PRIVATE -Og -g3 -fno-openmp)
-    else()
-        target_compile_options(${test_name} PRIVATE -O3 -march=native)
-        if(OpenMP_CXX_FOUND)
-            target_compile_options(${test_name} PRIVATE ${OpenMP_CXX_FLAGS})
-            target_link_libraries(${test_name} PRIVATE OpenMP::OpenMP_CXX)
-        endif()
-    endif()
-
-    get_filename_component(test_name ${test_file} NAME_WE)
-    add_test(NAME ${test_name} COMMAND ${test_name})
-endforeach ()
+add_subdirectory(src/scf)
