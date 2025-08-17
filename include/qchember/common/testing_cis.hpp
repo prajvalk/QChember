@@ -1,5 +1,5 @@
 /*
-* NewSCF
+ * NewSCF
  * Copyright (C) 2025, Prajval K
  *
  * This program is free software: you can redistribute it and/or modify

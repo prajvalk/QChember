@@ -2,3 +2,9 @@ build/*
 .vscode/settings.json
 pyscf_cmp/*
 /.idea
+build/*
+cmake/*
+cmake-*/*
+docs/html
+docs/latex
+.idea/*

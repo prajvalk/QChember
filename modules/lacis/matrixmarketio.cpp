@@ -1,5 +1,5 @@
 /*
-* NewSCF
+ * NewSCF
  * Copyright (C) 2025, Prajval K
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "newscf/cis.hpp"
+#include "qchember/api/cis.hpp"
 
 #include <fstream>
 #include <iomanip>

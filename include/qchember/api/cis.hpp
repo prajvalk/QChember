@@ -22,6 +22,8 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <random>
+#include <vector>
 
 namespace newscf::cis {
 
@@ -74,12 +76,16 @@ inline void newscf_memlog (const MEMORY_LOGGING_MODES mode,
         else if (mode == MEM_ERR) prefix = "ERR ";
         std::cout << "[" << prefix << " " << file << ":" << line << "]: " << message << std::endl;
 }
-
+#ifndef DISABLE_MEMORY_LOGGING
 #define MEMLOG(MODE, MSG) \
         newscf_memlog (MODE, MSG, __FILE__, __LINE__)
 
 #define MEMLOG_ASIS(MODE, MSG, F, L) \
         newscf_memlog (MODE, MSG, F, L)
+#else
+#define MEMLOG(MODE, MSG)
+#define MEMLOG_ASIS(MODE, MSG, F, L)
+#endif
 
 /* Memory API */
 
@@ -384,6 +390,75 @@ public:
 // LACIS-LAPACK Default Exports
 typedef LACIS<DENSE_LAPACK, double> lacis_t;
 typedef LinearSolver<DSYSV> linearsolver_t;
+
+// Randomization API
+/*
+ * (Pseudo) (Batched Singular) Random Generator for Stack-like Use
+ */
+template<typename T, typename Engine = std::mt19937_64, typename Dist = std::uniform_real_distribution<T>>
+class CISRandomGenerator {
+public:
+	CISRandomGenerator(size_t sz, T lower = T(0), T upper = T(1))
+		: engine_(std::random_device{}()), dist_(lower, upper), workspace_(sz)
+	{
+		generateBatch();
+	}
+
+	const std::vector<T>& getBatch() const noexcept {
+		return workspace_;
+	}
+
+	T next() {
+		if (workptr_ >= workspace_.size()) {
+			generateBatch();
+			workptr_ = 0;
+		}
+		return workspace_[workptr_++];
+	}
+
+private:
+	void generateBatch() {
+		for (auto &val : workspace_)
+			val = dist_(engine_);
+	}
+
+	Engine engine_;
+	Dist dist_;
+	std::vector<T> workspace_{};
+	size_t workptr_ = 0;
+};
+
+
+/*
+ * (Pseudo) (Non-Batched Multi-reference) Random Generator for Generator-like Use
+ */
+template<typename T, typename Engine = std::mt19937_64, typename Dist = std::uniform_real_distribution<T>>
+class CISRandomGenerator2 {
+private:
+	Engine engine;
+	std::vector<Dist> distributions; // One distribution per parameter
+	size_t nparams;
+
+public:
+	CISRandomGenerator2(size_t params, const T* bounds)
+		: engine(std::random_device{}()), nparams(params)
+	{
+		distributions.reserve(params);
+		for (size_t i = 0; i < params; ++i) {
+			T lb = bounds[2 * i];
+			T ub = bounds[2 * i + 1];
+			distributions.emplace_back(lb, ub);
+		}
+	}
+
+	void next(T* result) {
+		for (size_t i = 0; i < nparams; ++i) {
+			result[i] = distributions[i](engine);
+		}
+	}
+};
+
+
 
 } // CIS Interface
 

@@ -1,80 +1,46 @@
-cmake_minimum_required(VERSION 3.31)
-project(newscf_cis)
+cmake_minimum_required(VERSION 3.22)
+project(QChember LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 23)
-
-
-# ================================
-# Options
-# ================================
-option(USE_OPENMP  "Enable OpenMP parallelization" ON)
-option(USE_LIBCINT "Build with external libcint module" ON)
-
-# ================================
-# Set Build Types
-# ================================
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING
-            "Choose the type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+# Allow user to set build type if not set
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "No build type specified. Defaulting to RelWithDebInfo.")
+  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build" FORCE)
 endif()
 
-# ================================
-# Compiler Flags
-# ================================
-set(COMMON_CXX_FLAGS "-Wall -Wextra -Wpedantic")
-set(COMMON_C_FLAGS   "-Wall -Wextra -Wpedantic")
+# Expose our helper modules
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+include(CompilerHelpers)
+include(FindCUDA_CUBLAS)
+include(FindBLAS_LAPACK)
 
-# Detect compiler
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(CMAKE_C_FLAGS_DEBUG   "${COMMON_C_FLAGS} -g")
-    set(CMAKE_CXX_FLAGS_DEBUG "${COMMON_CXX_FLAGS} -g")
-    set(CMAKE_C_FLAGS_RELEASE   "${COMMON_C_FLAGS} -O3 -DNDEBUG -march=native")
-    set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_CXX_FLAGS} -O3 -DNDEBUG -march=native")
+# Set sane default output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(CMAKE_C_FLAGS_DEBUG   "${COMMON_C_FLAGS} -g")
-    set(CMAKE_CXX_FLAGS_DEBUG "${COMMON_CXX_FLAGS} -g")
-    set(CMAKE_C_FLAGS_RELEASE   "${COMMON_C_FLAGS} -O3 -DNDEBUG -march=native")
-    set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_CXX_FLAGS} -O3 -DNDEBUG -march=native")
+# Configure default flags for the detected compiler
+configure_compiler_flags()
 
-elseif(MSVC)
-    message(WARNING "This boilerplate currently doesn't optimize MSVC flags.")
-endif()
+# Detect CUDA / CUBLAS
+#detect_cuda_and_cublas()
+detect_blas_lapack()
 
-# ================================
-# OpenMP
-# ================================
-if(USE_OPENMP)
-    find_package(OpenMP REQUIRED)
-    if(OpenMP_CXX_FOUND)
-        message(STATUS "Using OpenMP")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endif()
-endif()
+include_directories(include)
 
-include_directories(public_api)
-include_directories(private_api)
+add_library(qchember SHARED modules/lacis/lacis.cpp
+                            modules/lacis/matrixmarketio.cpp)
 
-# Test Data
-set(TEST_DATA_SOURCE_DIR "${CMAKE_SOURCE_DIR}/TestData")
-set(TEST_DATA_DEST_DIR "${CMAKE_BINARY_DIR}/TestData")
+# Example: create a library target and attach common flags
+#add_library(example_lib src/example.cpp)
+#target_link_libraries(example_lib PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+#apply_common_target_flags(example_lib)
 
-add_custom_target(copy_test_data ALL
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${TEST_DATA_SOURCE_DIR}
-        ${TEST_DATA_DEST_DIR}
-        COMMENT "Copying test data to ${TEST_DATA_DEST_DIR}"
-)
-
-enable_testing()
-
-add_subdirectory(src/lacis)
-add_subdirectory(src/lacislapack)
-add_subdirectory(src/newscf-utils)
-
-if(USE_LIBCINT)
-    add_subdirectory(src/libcint-wrapper)
-endif()
-
-add_subdirectory(src/scf)
+# If CUDA exists, create an interface target to link CUDA libs
+#if(HAS_CUDA)
+ # message(STATUS "CUDA detected: enabling CUDA-related targets")
+ # add_library(project_cuda INTERFACE)
+ # if(HAS_CUBLAS)
+ #   target_link_libraries(project_cuda INTERFACE ${CUBLAS_LIBRARIES})
+ # endif()
+ # target_compile_definitions(project_cuda INTERFACE HAS_CUDA=1)
+#endif()
