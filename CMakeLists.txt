@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.10)
 project(QChember LANGUAGES C CXX)
 
 # Allow user to set build type if not set
