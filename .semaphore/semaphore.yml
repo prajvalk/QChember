@@ -8,7 +8,7 @@ agent:
     - name: main
       image: 'gcc:15.1.0'
 blocks:
-  - name: GCC 13 Build
+  - name: 'Ubuntu 20.04 '
     dependencies: []
     task:
       agent:
@@ -16,7 +16,7 @@ blocks:
           type: e1-standard-2
           os_image: ubuntu2004
       jobs:
-        - name: 'Build (GCC 13, OpenBLAS, No-OpenMP, Debug)'
+        - name: Debug/GCC+OpenBLAS+NoOpenMP
           commands:
             - checkout
             - git submodule update --init --recursive
