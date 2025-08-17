@@ -20,8 +20,8 @@ blocks:
           commands:
             - checkout
             - git submodule update --init --recursive
-            - apt-get update
-            - apt-get install cmake make libopenblas-dev liblapack-dev -y
+            - sudo apt-get update
+            - sudo apt-get install cmake make libopenblas-dev liblapack-dev -y
             - mkdir build
             - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
             - pushd build
