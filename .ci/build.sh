@@ -25,10 +25,11 @@ case "$COMPILER" in
     export CXX=clang++
     ;;
   intel)
-    wget https://registrationcenter-download.intel.com/akdlm/irc_nas/tec/oneapi-latest/linux/oneapi-latest.tar.gz
-    tar -xzf oneapi-latest.tar.gz
-    ./oneapi*/bootstrapper --action install --components intel-icc,ifort,mkl --silent
-    source /opt/intel/oneapi/setvars.sh
+    wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+|   gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+    echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+    sudo apt update
+    sudo apt install intel-oneapi-hpc-toolkit
     export CC=icc
     export CXX=icpc
     ;;
