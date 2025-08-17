@@ -33,7 +33,7 @@ case "$COMPILER" in
     export CXX=icpc
     ;;
   amd)
-    wget https://developer.amd.com/wordpress/media/files/aocc-compiler.tar
+    wget https://download.amd.com/developer/eula/aocc/aocc-5-0/aocc-compiler-5.0.0.tar
     tar -xf aocc-compiler.tar
     ./aocc*/install.sh --accept
     source /opt/AMD/aocc*/setenv.sh
