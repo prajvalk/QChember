@@ -1,0 +1,53 @@
+function(detect_blas_lapack)
+  set(HAS_BLAS FALSE PARENT_SCOPE)
+  set(HAS_LAPACK FALSE PARENT_SCOPE)
+
+  # Try CMake's built-in BLAS/LAPACK first
+  find_package(BLAS)
+  find_package(LAPACK)
+
+  if(BLAS_FOUND AND LAPACK_FOUND)
+    set(HAS_BLAS TRUE PARENT_SCOPE)
+    set(HAS_LAPACK TRUE PARENT_SCOPE)
+    set(BLAS_LIBRARIES ${BLAS_LIBRARIES} PARENT_SCOPE)
+    set(LAPACK_LIBRARIES ${LAPACK_LIBRARIES} PARENT_SCOPE)
+    message(STATUS "BLAS and LAPACK found via CMake's built-in modules.")
+    return()
+  endif()
+
+  # Check for OpenBLAS explicitly
+  find_package(OpenBLAS QUIET)
+  if(OpenBLAS_FOUND)
+    set(HAS_BLAS TRUE PARENT_SCOPE)
+    set(HAS_LAPACK TRUE PARENT_SCOPE)
+    set(BLAS_LIBRARIES ${OpenBLAS_LIBRARIES} PARENT_SCOPE)
+    set(LAPACK_LIBRARIES ${OpenBLAS_LIBRARIES} PARENT_SCOPE)
+    message(STATUS "OpenBLAS found: ${OpenBLAS_LIBRARIES}")
+    return()
+  endif()
+
+  # Check for Intel MKL
+  find_package(MKL QUIET)
+  if(MKL_FOUND)
+    set(HAS_BLAS TRUE PARENT_SCOPE)
+    set(HAS_LAPACK TRUE PARENT_SCOPE)
+    set(BLAS_LIBRARIES ${MKL_LIBRARIES} PARENT_SCOPE)
+    set(LAPACK_LIBRARIES ${MKL_LIBRARIES} PARENT_SCOPE)
+    message(STATUS "Intel MKL found: ${MKL_LIBRARIES}")
+    return()
+  endif()
+
+  # Check for libFLAME + BLIS (or similar)
+  find_library(FLAME_LIB flame)
+  find_library(BLIS_LIB blis)
+  if(FLAME_LIB AND BLIS_LIB)
+    set(HAS_BLAS TRUE PARENT_SCOPE)
+    set(HAS_LAPACK TRUE PARENT_SCOPE)
+    set(BLAS_LIBRARIES ${BLIS_LIB} PARENT_SCOPE)
+    set(LAPACK_LIBRARIES ${FLAME_LIB} PARENT_SCOPE)
+    message(STATUS "libFLAME + BLIS found: BLIS=${BLIS_LIB}, FLAME=${FLAME_LIB}")
+    return()
+  endif()
+
+  message(WARNING "No BLAS/LAPACK implementation found.")
+endfunction()
