@@ -1,29 +1,221 @@
 version: v1.0
-name: Initial Pipeline
+name: Build Matrix Pipeline
 agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu2004
   containers:
     - name: main
-      image: 'gcc:15.1.0'
+      image: 'ubuntu:20.04'
+
 blocks:
-  - name: 'Ubuntu 20.04 '
+  - name: "Build Matrix"
     dependencies: []
     task:
-      agent:
-        machine:
-          type: e1-standard-2
-          os_image: ubuntu2004
       jobs:
-        - name: Debug/GCC+OpenBLAS+NoOpenMP
+        # ====================
+        # GCC Debug builds
+        # ====================
+        - name: GCC + OpenBLAS + OpenMP=OFF + Debug
+          env_vars:
+            - name: COMPILER
+              value: gcc
+            - name: BLAS_VENDOR
+              value: openblas
+            - name: OPENMP
+              value: OFF
+            - name: BUILD_TYPE
+              value: Debug
           commands:
-            - checkout
-            - git submodule update --init --recursive
-            - sudo apt-get update
-            - sudo apt-get install cmake make libopenblas-dev liblapack-dev -y
-            - mkdir build
-            - cmake -B build -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DCMAKE_BUILD_TYPE=Debug -DUSE_OPENMP=OFF
-            - pushd build
-            - make -j
-            - popd
+            - .ci/build.sh
+
+        - name: GCC + OpenBLAS + OpenMP=ON + Debug
+          env_vars:
+            - name: COMPILER
+              value: gcc
+            - name: BLAS_VENDOR
+              value: openblas
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Debug
+          commands:
+            - .ci/build.sh
+
+        - name: GCC + MKL + OpenMP=OFF + Debug
+          env_vars:
+            - name: COMPILER
+              value: gcc
+            - name: BLAS_VENDOR
+              value: mkl
+            - name: OPENMP
+              value: OFF
+            - name: BUILD_TYPE
+              value: Debug
+          commands:
+            - .ci/build.sh
+
+        - name: GCC + MKL + OpenMP=ON + Debug
+          env_vars:
+            - name: COMPILER
+              value: gcc
+            - name: BLAS_VENDOR
+              value: mkl
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Debug
+          commands:
+            - .ci/build.sh
+
+        - name: GCC + libFLAME+BLIS + OpenMP=OFF + Debug
+          env_vars:
+            - name: COMPILER
+              value: gcc
+            - name: BLAS_VENDOR
+              value: blis
+            - name: OPENMP
+              value: OFF
+            - name: BUILD_TYPE
+              value: Debug
+          commands:
+            - .ci/build.sh
+
+        - name: GCC + libFLAME+BLIS + OpenMP=ON + Debug
+          env_vars:
+            - name: COMPILER
+              value: gcc
+            - name: BLAS_VENDOR
+              value: blis
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Debug
+          commands:
+            - .ci/build.sh
+
+        # ====================
+        # Clang Release builds (always OpenMP=ON)
+        # ====================
+        - name: Clang + OpenBLAS + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: clang
+            - name: BLAS_VENDOR
+              value: openblas
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
+
+        - name: Clang + MKL + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: clang
+            - name: BLAS_VENDOR
+              value: mkl
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
+
+        - name: Clang + libFLAME+BLIS + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: clang
+            - name: BLAS_VENDOR
+              value: blis
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
+
+        # ====================
+        # Intel Release builds (always OpenMP=ON)
+        # ====================
+        - name: Intel + OpenBLAS + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: intel
+            - name: BLAS_VENDOR
+              value: openblas
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
+
+        - name: Intel + MKL + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: intel
+            - name: BLAS_VENDOR
+              value: mkl
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
+
+        - name: Intel + libFLAME+BLIS + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: intel
+            - name: BLAS_VENDOR
+              value: blis
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
+
+        # ====================
+        # AMD Release builds (always OpenMP=ON)
+        # ====================
+        - name: AMD + OpenBLAS + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: amd
+            - name: BLAS_VENDOR
+              value: openblas
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
+
+        - name: AMD + MKL + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: amd
+            - name: BLAS_VENDOR
+              value: mkl
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
+
+        - name: AMD + libFLAME+BLIS + OpenMP=ON + Release
+          env_vars:
+            - name: COMPILER
+              value: amd
+            - name: BLAS_VENDOR
+              value: blis
+            - name: OPENMP
+              value: ON
+            - name: BUILD_TYPE
+              value: Release
+          commands:
+            - .ci/build.sh
