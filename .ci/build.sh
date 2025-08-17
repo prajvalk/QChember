@@ -9,18 +9,18 @@ echo "BUILD_TYPE=$BUILD_TYPE"
 echo "===================="
 
 # Update packages
-apt-get update -y
-apt-get install -y git cmake make wget
+sudo apt-get update -y
+sudo apt-get install -y git cmake make wget
 
 # Select compiler
 case "$COMPILER" in
   gcc)
-    apt-get install -y gcc g++ gfortran
+    sudo apt-get install -y gcc g++ gfortran
     export CC=gcc
     export CXX=g++
     ;;
   clang)
-    apt-get install -y clang lld gfortran
+    sudo apt-get install -y clang lld gfortran
     export CC=clang
     export CXX=clang++
     ;;
@@ -45,13 +45,13 @@ esac
 # Install BLAS/LAPACK
 case "$BLAS_VENDOR" in
   openblas)
-    apt-get install -y libopenblas-dev liblapack-dev
+    sudo apt-get install -y libopenblas-dev liblapack-dev
     ;;
   mkl)
     # Intel MKL installed already with oneAPI above
     ;;
   blis)
-    apt-get install -y libblis-dev libflame-dev
+    sudo apt-get install -y libblis-dev libflame-dev
     ;;
 esac
 
