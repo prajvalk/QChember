@@ -48,42 +48,6 @@ blocks:
               value: Release
           commands:
             - .ci/build.sh
-        - name: Intel + MKL + OpenMP=ON + Release
-          env_vars:
-            - name: COMPILER
-              value: intel
-            - name: BLAS_VENDOR
-              value: mkl
-            - name: OPENMP
-              value: 'ON'
-            - name: BUILD_TYPE
-              value: Release
-          commands:
-            - .ci/build.sh
-        - name: AMD + OpenBLAS + OpenMP=ON + Release
-          env_vars:
-            - name: COMPILER
-              value: amd
-            - name: BLAS_VENDOR
-              value: openblas
-            - name: OPENMP
-              value: 'ON'
-            - name: BUILD_TYPE
-              value: Release
-          commands:
-            - .ci/build.sh
-        - name: AMD + libFLAME+BLIS + OpenMP=ON + Release
-          env_vars:
-            - name: COMPILER
-              value: amd
-            - name: BLAS_VENDOR
-              value: blis
-            - name: OPENMP
-              value: 'ON'
-            - name: BUILD_TYPE
-              value: Release
-          commands:
-            - .ci/build.sh
       agent:
         machine:
           type: e1-standard-2
