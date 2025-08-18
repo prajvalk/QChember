@@ -43,7 +43,7 @@ function(configure_compiler_flags)
     # LTO linker flags (gcc/clang)
     set(_ldflags "-flto")
 
-  elseif(CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  elseif(CMAKE_C_COMPILER_ID STREQUAL "IntelLLVM")
     # Intel compilers prefer -O3 and -ipo for link-time optimization
     set(CMAKE_C_FLAGS_RELEASE "-O3 -xHost -ipo")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -xHost -ipo")
